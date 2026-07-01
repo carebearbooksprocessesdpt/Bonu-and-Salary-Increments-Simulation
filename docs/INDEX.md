@@ -49,6 +49,12 @@ This folder is the navigation layer for the CareBearBooks Bonus and Salary Incre
 3. [Financial Formulas](finance/financial-formulas.md)
 4. Implementation anchors: `../src/components/SimulationClient.tsx`, `../src/components/SetIncentivesClient.tsx`
 
+### Team Coordination And Git Work
+
+1. [Team Task Split](development/TEAM_TASK_SPLIT.md)
+2. [Git Workflow](development/GIT_WORKFLOW.md)
+3. [Development Workflow](development/development-workflow.md)
+
 ## Document Map
 
 | Document | Purpose | What Belongs There |
@@ -62,6 +68,8 @@ This folder is the navigation layer for the CareBearBooks Bonus and Salary Incre
 | [API Design](api/api-design.md) | Defines API boundaries and rules for future endpoint contracts. | Currency route, future rule/scenario/simulation APIs, external integration exclusions, request/response documentation standards. |
 | [UI/UX Specifications](product/ui-ux-specifications.md) | Defines the dashboard experience. | Page layout, charts, result cards, advanced projections, labels, status display behavior. |
 | [Development Workflow](development/development-workflow.md) | Defines how humans and AI assistants should safely modify the project. | Reading order, change protocol, testing expectations, local commands, documentation update rules. |
+| [Team Task Split](development/TEAM_TASK_SPLIT.md) | Divides the repository into four developer lanes. | Branch ownership, responsibilities, allowed files, avoid lists, coordination rules. |
+| [Git Workflow](development/GIT_WORKFLOW.md) | Defines the branch and pull request workflow. | PowerShell commands, VS Code terminal commands, PR targets, review and merge rules. |
 | [Roadmap](product/roadmap.md) | Tracks project evolution without changing business rules. | Current foundation, planned implementation areas, optional advanced sections, future prompts. |
 | [Set Incentives Rule Values](reference/set-incentives-rule-values.md) | Preserves the current configured rule values from the handoff. | Rule values to seed/configure in Set Incentives, not hardcode in calculation logic. |
 | [Source Handoff Map](reference/source-handoff-map.md) | Maps the original combined document sections to the split docs. | Traceability from the original numbered sections to their new homes. |
