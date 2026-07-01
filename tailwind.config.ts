@@ -12,14 +12,25 @@ const config: Config = {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"]
       },
       colors: {
-        cream: "#f7f2e8",
-        ink: "#172421",
-        "dark-teal": "#0b4a45",
-        teal: "#16736b",
-        "teal-soft": "#d9efeb",
-        sage: "#8aa891",
-        "sage-soft": "#edf4ef",
-        line: "#d9e4dc"
+        cream: "#f6f7f4",
+        ink: "#1c2420",
+        "dark-teal": "#0e3d3a",
+        teal: "#0a2d2a",
+        "teal-soft": "#e8f0ee",
+        sage: "#d2e0dd",
+        "sage-soft": "#f8faf7",
+        line: "#e2e6dc",
+        "line-strong": "#cfd6c8",
+        accent: "#c8893d",
+        "accent-soft": "#f3e5d4",
+        danger: "#8a3d35",
+        "danger-soft": "#f4ddd9",
+        success: "#244c3a",
+        "success-soft": "#dcecdf",
+        warn: "#7a4b11",
+        "warn-soft": "#f3e5d4",
+        info: "#2c5d7a",
+        "info-soft": "#d8e7ee"
       },
       boxShadow: {
         soft: "0 16px 40px rgba(17, 46, 42, 0.08)"

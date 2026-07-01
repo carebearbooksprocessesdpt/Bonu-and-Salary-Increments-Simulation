@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import Link from "next/link";
+import { NavLinks } from "@/components/NavLinks";
 import "./globals.css";
 
-const inter = Inter({
+const geistSans = Geist({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-sans"
@@ -22,7 +23,7 @@ const navItems = [
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={geistSans.variable}>
       <body>
         <div className="shell">
           <header className="app-nav sticky top-0 z-40">
@@ -33,17 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   CareBearBooks Bonus and Salary Increments Simulation
                 </h1>
               </Link>
-              <nav className="flex flex-wrap gap-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="rounded-full border border-line bg-white px-4 py-2 text-sm font-bold text-dark-teal transition hover:border-teal hover:bg-teal-soft"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
+              <NavLinks items={navItems} />
             </div>
           </header>
           <main className="app-container py-6 lg:py-8">{children}</main>

@@ -182,8 +182,8 @@ function ChartsRow({
       <div className="chart-box">
         <h3 className="text-sm font-black text-ink">Revenue vs Equilibrium</h3>
         <div className="mt-5 space-y-4">
-          <Bar label="Revenue" value={results.revenueKsh} max={maxRevenue} color="#16736b" />
-          <Bar label="Equilibrium" value={results.equilibriumRevenueKsh} max={maxRevenue} color="#8aa891" />
+          <Bar label="Revenue" value={results.revenueKsh} max={maxRevenue} color="#0e3d3a" />
+          <Bar label="Equilibrium" value={results.equilibriumRevenueKsh} max={maxRevenue} color="#c8893d" />
         </div>
       </div>
       <div className="chart-box">
@@ -217,10 +217,10 @@ function ChartsRow({
       <div className="chart-box">
         <h3 className="text-sm font-black text-ink">Profit Flow Waterfall</h3>
         <div className="mt-4 space-y-3">
-          <Bar label="Revenue" value={results.revenueKsh} max={maxRevenue} color="#0b4a45" />
-          <Bar label="Before Incentives" value={results.profitBeforeIncentivesKsh} max={maxRevenue} color="#16736b" />
-          <Bar label="After Incentives" value={results.profitAfterIncentivesKsh} max={maxRevenue} color="#8aa891" />
-          <Bar label="Protected Profit" value={results.profitToProtectKsh} max={maxRevenue} color="#2f3e38" />
+          <Bar label="Revenue" value={results.revenueKsh} max={maxRevenue} color="#0e3d3a" />
+          <Bar label="Before Incentives" value={results.profitBeforeIncentivesKsh} max={maxRevenue} color="#14595a" />
+          <Bar label="After Incentives" value={results.profitAfterIncentivesKsh} max={maxRevenue} color="#c8893d" />
+          <Bar label="Protected Profit" value={results.profitToProtectKsh} max={maxRevenue} color="#082a28" />
         </div>
       </div>
     </section>
