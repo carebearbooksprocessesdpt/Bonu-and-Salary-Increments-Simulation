@@ -36,7 +36,7 @@ export async function GET() {
       configured: false,
       rate: null,
       source: "manual",
-      message: "CURRENCY_API_URL is not configured. Manual exchange rate entry remains available."
+      message: "Live exchange rate not available — enter the rate manually below."
     });
   }
 
@@ -54,7 +54,7 @@ export async function GET() {
         configured: true,
         rate: null,
         source: "manual",
-        message: "Currency provider did not return a usable response. Manual exchange rate entry remains available."
+        message: "Couldn't reach the live exchange rate right now — enter the rate manually below."
       });
     }
 
@@ -67,7 +67,7 @@ export async function GET() {
         configured: true,
         rate: null,
         source: "manual",
-        message: "Currency provider response did not include a positive USD to KSh rate."
+        message: "Live exchange rate wasn't in the expected format — enter the rate manually below."
       });
     }
 
@@ -84,7 +84,7 @@ export async function GET() {
       configured: true,
       rate: null,
       source: "manual",
-      message: "Currency API request failed. Manual exchange rate entry remains available."
+      message: "Couldn't reach the live exchange rate right now — enter the rate manually below."
     });
   }
 }
