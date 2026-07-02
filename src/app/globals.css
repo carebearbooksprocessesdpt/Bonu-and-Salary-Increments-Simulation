@@ -406,27 +406,42 @@ button {
   box-shadow: 0 0 0 2px rgba(14, 61, 58, 0.1);
 }
 
+.chart-preview-state {
+  padding: 0.5rem 0;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
   text-align: center;
   color: var(--cb-text-subtle);
   gap: 0.5rem;
 }
 
 .empty-state-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--cb-radius-md);
   background: var(--cb-brand-softer);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--cb-brand);
   animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+.empty-state-preview {
+  width: 100%;
+  padding: 0.75rem 0;
+}
+
+.preview-bar {
+  height: 10px;
+  border-radius: 999px;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 .bar-animated {
@@ -459,6 +474,11 @@ button {
 @keyframes stagger-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.45; }
 }
 
 .stagger-1 { animation: stagger-in 0.4s 0.05s ease-out both; }

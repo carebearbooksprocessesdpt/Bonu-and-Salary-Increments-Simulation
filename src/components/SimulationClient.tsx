@@ -95,15 +95,43 @@ const chartOptions: { value: ChartType; label: string }[] = [
   { value: "salary-vs-departments", label: "Salary Payouts vs Departments" }
 ];
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({ message, type = "bar" }: { message: string; type?: "bar" | "pie" | "info" }) {
   return (
     <div className="empty-state">
-      <div className="empty-state-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 3v18h18" />
-          <path d="M7 16l4-8 4 4 4-6" />
-        </svg>
-      </div>
+      {type === "pie" ? (
+        <div className="empty-state-preview">
+          <div className="flex justify-center mb-3">
+            <svg width="100" height="100" viewBox="0 0 100 100" role="img" aria-label="Preview">
+              <path d="M 50 6 A 44 44 0 0 1 92 60 L 50 50 Z" fill="rgba(14,61,58,0.1)" stroke="white" strokeWidth="2" />
+              <path d="M 92 60 A 44 44 0 0 1 22 88 L 50 50 Z" fill="rgba(200,137,61,0.1)" stroke="white" strokeWidth="2" />
+              <path d="M 22 88 A 44 44 0 0 1 8 38 L 50 50 Z" fill="rgba(124,92,191,0.1)" stroke="white" strokeWidth="2" />
+              <path d="M 8 38 A 44 44 0 0 1 50 6 L 50 50 Z" fill="rgba(44,93,122,0.1)" stroke="white" strokeWidth="2" />
+              <circle cx="50" cy="50" r="18" fill="white" />
+            </svg>
+          </div>
+        </div>
+      ) : type === "bar" ? (
+        <div className="empty-state-preview">
+          <div className="space-y-2.5 mb-3">
+            <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
+              <div className="preview-bar h-full rounded-full" style={{ width: "78%", background: "linear-gradient(90deg, rgba(14,61,58,0.15), rgba(14,61,58,0.06))" }} />
+            </div>
+            <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
+              <div className="preview-bar h-full rounded-full" style={{ width: "55%", background: "linear-gradient(90deg, rgba(200,137,61,0.15), rgba(200,137,61,0.06))", animationDelay: "0.3s" }} />
+            </div>
+            <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
+              <div className="preview-bar h-full rounded-full" style={{ width: "40%", background: "linear-gradient(90deg, rgba(124,92,191,0.15), rgba(124,92,191,0.06))", animationDelay: "0.6s" }} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="empty-state-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 3v18h18" />
+            <path d="M7 16l4-8 4 4 4-6" />
+          </svg>
+        </div>
+      )}
       <p className="text-sm font-semibold">{message}</p>
     </div>
   );
@@ -438,7 +466,7 @@ function ChartCard({
     switch (selectedChart) {
       case "revenue-vs-equilibrium": {
         if (!isFiniteNumber(results.revenueKsh) && !isFiniteNumber(results.equilibriumRevenueKsh)) {
-          return <EmptyState message="Enter revenue and cost inputs to preview this chart." />;
+          return <EmptyState message="Enter revenue and cost inputs to preview this chart." type="bar" />;
         }
         const revenueAbove = isFiniteNumber(results.revenueKsh) && isFiniteNumber(results.equilibriumRevenueKsh) && results.revenueKsh >= results.equilibriumRevenueKsh;
         return (
@@ -463,10 +491,25 @@ function ChartCard({
       case "previous-vs-current":
         return (
           <div className="empty-state">
-            <div className="empty-state-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" />
-              </svg>
+            <div className="empty-state-preview">
+              <div className="space-y-3 mb-3">
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
+                    <span>Previous Payouts</span><span>—</span>
+                  </div>
+                  <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
+                    <div className="preview-bar h-full rounded-full" style={{ width: "65%", background: "linear-gradient(90deg, rgba(14,61,58,0.12), rgba(14,61,58,0.04))" }} />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
+                    <span>Current Payouts</span><span>—</span>
+                  </div>
+                  <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
+                    <div className="preview-bar h-full rounded-full" style={{ width: "45%", background: "linear-gradient(90deg, rgba(200,137,61,0.12), rgba(200,137,61,0.04))", animationDelay: "0.3s" }} />
+                  </div>
+                </div>
+              </div>
             </div>
             <p className="text-sm font-semibold">Previous payout data is not available yet.</p>
             <p className="text-xs text-slate-400">Save a scenario first, then run a new simulation to compare.</p>
@@ -475,7 +518,7 @@ function ChartCard({
 
       case "department-bonus": {
         const entries = Object.entries(departmentBonuses).filter(([, v]) => v > 0);
-        if (entries.length === 0) return <EmptyState message="Add qualifying employees to calculate department bonuses." />;
+        if (entries.length === 0) return <EmptyState message="Add qualifying employees to calculate department bonuses." type="pie" />;
         return (
           <PieChart
             segments={entries.map(([dept, value], i) => ({
@@ -489,7 +532,7 @@ function ChartCard({
 
       case "department-incentive": {
         const entries = Object.entries(departmentExposure).filter(([, v]) => v > 0);
-        if (entries.length === 0) return <EmptyState message="Add qualifying employees to see incentive distribution." />;
+        if (entries.length === 0) return <EmptyState message="Add qualifying employees to see incentive distribution." type="pie" />;
         return (
           <PieChart
             segments={entries.map(([dept, value], i) => ({
@@ -503,7 +546,7 @@ function ChartCard({
 
       case "bonus-vs-salary": {
         const total = bonusExposure + salaryExposure;
-        if (total === 0) return <EmptyState message="Add assumptions to see bonus vs salary increment split." />;
+        if (total === 0) return <EmptyState message="Add assumptions to see bonus vs salary increment split." type="pie" />;
         return (
           <div className="space-y-4">
             <PieChart
@@ -527,7 +570,7 @@ function ChartCard({
       }
 
       case "profit-flow":
-        if (!isFiniteNumber(results.revenueKsh)) return <EmptyState message="Enter revenue and costs to see profit flow." />;
+        if (!isFiniteNumber(results.revenueKsh)) return <EmptyState message="Enter revenue and costs to see profit flow." type="bar" />;
         return (
           <BarGraph
             bars={[
@@ -542,7 +585,7 @@ function ChartCard({
 
       case "department-exposure": {
         const entries = Object.entries(departmentExposure).filter(([, v]) => v > 0);
-        if (entries.length === 0) return <EmptyState message="Add assumptions to see department exposure." />;
+        if (entries.length === 0) return <EmptyState message="Add assumptions to see department exposure." type="bar" />;
         return (
           <div className="space-y-2">
             {entries.map(([department, value], index) => (
@@ -566,7 +609,7 @@ function ChartCard({
             return totals;
           }, {});
         const entries = Object.entries(salaryByDept).filter(([, v]) => v > 0);
-        if (entries.length === 0) return <EmptyState message="No salary increment exposure by department yet." />;
+        if (entries.length === 0) return <EmptyState message="No salary increment exposure by department yet." type="bar" />;
         return (
           <BarGraph
             bars={entries.map(([dept, value], i) => ({
@@ -583,12 +626,42 @@ function ChartCard({
     }
   }
 
+  const chartLabel = chartOptions.find(o => o.value === selectedChart)?.label ?? "Chart";
+  const isPie = selectedChart === "department-bonus" || selectedChart === "department-incentive" || selectedChart === "bonus-vs-salary";
+  const headerColors: Record<string, string> = {
+    "revenue-vs-equilibrium": "linear-gradient(135deg, rgba(14,61,58,0.07), rgba(20,89,90,0.03))",
+    "previous-vs-current": "linear-gradient(135deg, rgba(14,61,58,0.05), rgba(200,137,61,0.04))",
+    "department-bonus": "linear-gradient(135deg, rgba(124,92,191,0.06), rgba(14,61,58,0.03))",
+    "department-incentive": "linear-gradient(135deg, rgba(200,137,61,0.06), rgba(124,92,191,0.03))",
+    "bonus-vs-salary": "linear-gradient(135deg, rgba(14,61,58,0.06), rgba(124,92,191,0.04))",
+    "profit-flow": "linear-gradient(135deg, rgba(34,131,90,0.06), rgba(14,61,58,0.03))",
+    "department-exposure": "linear-gradient(135deg, rgba(200,137,61,0.06), rgba(14,61,58,0.03))",
+    "salary-vs-departments": "linear-gradient(135deg, rgba(124,92,191,0.06), rgba(200,137,61,0.03))",
+  };
+  const iconColors: Record<string, string> = {
+    "revenue-vs-equilibrium": "#0e3d3a",
+    "previous-vs-current": "#14595a",
+    "department-bonus": "#7c5cbf",
+    "department-incentive": "#c8893d",
+    "bonus-vs-salary": "#0e3d3a",
+    "profit-flow": "#22835a",
+    "department-exposure": "#c8893d",
+    "salary-vs-departments": "#7c5cbf",
+  };
+
   return (
-    <div className="chart-box flex flex-col">
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <h3 className="text-sm font-black text-ink truncate">
-          {chartOptions.find(o => o.value === selectedChart)?.label ?? "Chart"}
-        </h3>
+    <div className="chart-box flex flex-col" style={{ background: headerColors[selectedChart] ?? "var(--cb-surface)" }}>
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: iconColors[selectedChart] ?? "#0e3d3a" }}>
+            {isPie ? (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            )}
+          </div>
+          <h3 className="text-sm font-black text-ink truncate">{chartLabel}</h3>
+        </div>
         <select
           className="chart-selector flex-shrink-0"
           value={selectedChart}
