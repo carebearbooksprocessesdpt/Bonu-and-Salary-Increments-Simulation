@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"]
       },
       colors: {
         cream: "#f6f7f4",
@@ -34,6 +34,20 @@ const config: Config = {
       },
       boxShadow: {
         soft: "0 16px 40px rgba(17, 46, 42, 0.08)"
+      },
+      keyframes: {
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
+        },
+        "count-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.6" }
+        }
+      },
+      animation: {
+        "fade-in-up": "fade-in-up 0.5s ease-out both",
+        "count-pulse": "count-pulse 0.8s ease-in-out"
       }
     }
   },
