@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import Link from "next/link";
 import { NavLinks } from "@/components/NavLinks";
 import "./globals.css";
 
-const geistSans = Geist({
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-sans"
+  variable: "--font-inter"
 });
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ const navItems = [
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={geistSans.variable}>
+    <html lang="en" className={inter.variable}>
       <body>
         <div className="shell">
           <header className="app-nav sticky top-0 z-40">
