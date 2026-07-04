@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatCurrency, formatRuleCurrency, isFiniteNumber, parseNumericInput, toKsh } from "@/lib/currency";
 import { createScenarioSnapshot, scenarioStorageNote } from "@/lib/scenarios";
 import {
@@ -47,12 +47,12 @@ function numericValue(value: number | ""): number | null {
 }
 
 function ratioLabel(value: number | null): string {
-  if (!isFiniteNumber(value)) return "Needs numbers";
+  if (!isFiniteNumber(value)) return "Awaiting inputs";
   return `${(value * 100).toFixed(1)}%`;
 }
 
 function numberLabel(value: number | null): string {
-  if (!isFiniteNumber(value)) return "Needs numbers";
+  if (!isFiniteNumber(value)) return "—";
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(value);
 }
 
@@ -132,7 +132,7 @@ function EmptyState({ message, type = "bar" }: { message: string; type?: "bar" |
           </svg>
         </div>
       )}
-      <p className="text-sm font-semibold">{message}</p>
+      <p className="text-sm font-normal">{message}</p>
     </div>
   );
 }
@@ -244,13 +244,13 @@ function ControlField({
 
   return (
     <div className="compact-panel p-3">
-      <label className="text-xs font-black uppercase tracking-[0.1em] text-slate-600">{label}</label>
+      <label className="text-xs font-medium uppercase tracking-[0.1em] text-slate-600">{label}</label>
       <div className="mt-2 grid grid-cols-[34px_1fr_34px] items-center gap-2">
         <button className="btn btn-ghost h-9 px-0" type="button" onClick={() => adjust(-step)} aria-label={`Decrease ${label}`}>
           -
         </button>
         <input
-          className="input h-10 px-2 text-center font-black text-dark-teal"
+          className="input h-10 px-2 text-center font-medium text-dark-teal"
           inputMode="decimal"
           value={value}
           onChange={(event) => onChange(parseNumericInput(event.target.value))}
@@ -259,7 +259,7 @@ function ControlField({
           +
         </button>
       </div>
-      {suffix && <p className="mt-1 text-xs font-semibold text-slate-500">{suffix}</p>}
+      {suffix && <p className="mt-1 text-xs font-normal text-slate-500">{suffix}</p>}
     </div>
   );
 }
@@ -277,8 +277,8 @@ function SelectControl<T extends string>({
 }) {
   return (
     <div className="compact-panel p-3">
-      <label className="text-xs font-black uppercase tracking-[0.1em] text-slate-600">{label}</label>
-      <select className="input mt-2 h-10 font-black text-dark-teal" value={value} onChange={(event) => onChange(event.target.value as T)}>
+      <label className="text-xs font-medium uppercase tracking-[0.1em] text-slate-600">{label}</label>
+      <select className="input mt-2 h-10 font-medium text-dark-teal" value={value} onChange={(event) => onChange(event.target.value as T)}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -295,10 +295,10 @@ function ResultCard({ label, value, tone }: { label: string; value: string; tone
   return (
     <div className="result-card">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
         <ResultIcon label={label} />
       </div>
-      <strong className={toneClass}>{value}</strong>
+      <strong className={`font-medium ${toneClass}`}>{value}</strong>
     </div>
   );
 }
@@ -307,7 +307,7 @@ function Bar({ label, value, max, color }: { label: string; value: number | null
   const width = isFiniteNumber(value) && max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
   return (
     <div>
-      <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+      <div className="flex items-center justify-between text-xs font-normal text-slate-600">
         <span>{label}</span>
         <span>{isFiniteNumber(value) ? `${Math.round(width)}%` : "Waiting"}</span>
       </div>
@@ -365,7 +365,7 @@ function PieChart({
       </svg>
       <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
         {arcs.map((arc, index) => (
-          <div key={index} className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+          <div key={index} className="flex items-center gap-1.5 text-xs font-normal text-slate-600">
             <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: arc.color }} />
             <span>{arc.label}</span>
             <span className="text-slate-400">{arc.percentage}%</span>
@@ -390,12 +390,12 @@ function BarGraph({
     <div className="space-y-3">
       {bars.map((bar, index) => (
         <div key={index}>
-          <div className="flex items-center justify-between text-xs font-bold text-slate-600 mb-1">
+          <div className="flex items-center justify-between text-xs font-normal text-slate-600 mb-1">
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: bar.color }} />
               {bar.label}
             </span>
-            <span className="font-black text-dark-teal">
+            <span className="font-medium text-dark-teal">
               {new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(bar.value)}
             </span>
           </div>
@@ -478,7 +478,7 @@ function ChartCard({
               ]}
             />
             {isFiniteNumber(results.revenueKsh) && isFiniteNumber(results.equilibriumRevenueKsh) && (
-              <div className={`rounded-xl px-3 py-2 text-xs font-bold ${revenueAbove ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+              <div className={`rounded-xl px-3 py-2 text-xs font-medium ${revenueAbove ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
                 {revenueAbove
                   ? `Revenue is above equilibrium by ${formatCurrency(results.revenueSurplusKsh, display, exchangeRate)}`
                   : `Revenue is below equilibrium. Additional ${formatCurrency(results.additionalRevenueNeededKsh, display, exchangeRate)} needed.`}
@@ -494,7 +494,7 @@ function ChartCard({
             <div className="empty-state-preview">
               <div className="space-y-3 mb-3">
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
+                  <div className="flex items-center justify-between text-xs font-normal text-slate-300 mb-1">
                     <span>Previous Payouts</span><span>—</span>
                   </div>
                   <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
@@ -502,7 +502,7 @@ function ChartCard({
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
+                  <div className="flex items-center justify-between text-xs font-normal text-slate-300 mb-1">
                     <span>Current Payouts</span><span>—</span>
                   </div>
                   <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(210,224,221,0.3)" }}>
@@ -511,7 +511,7 @@ function ChartCard({
                 </div>
               </div>
             </div>
-            <p className="text-sm font-semibold">Previous payout data is not available yet.</p>
+            <p className="text-sm font-normal">Previous payout data is not available yet.</p>
             <p className="text-xs text-slate-400">Save a scenario first, then run a new simulation to compare.</p>
           </div>
         );
@@ -557,12 +557,12 @@ function ChartCard({
             />
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="rounded-xl bg-sage-soft px-3 py-2 text-center">
-                <div className="text-xs font-bold text-slate-500">Bonus</div>
-                <div className="font-black text-dark-teal">{formatCurrency(bonusExposure, display, exchangeRate)}</div>
+                <div className="text-xs font-normal text-slate-500">Bonus</div>
+                <div className="font-medium text-dark-teal">{formatCurrency(bonusExposure, display, exchangeRate)}</div>
               </div>
               <div className="rounded-xl bg-purple-50 px-3 py-2 text-center">
-                <div className="text-xs font-bold text-slate-500">Salary Increment</div>
-                <div className="font-black text-purple-800">{formatCurrency(salaryExposure, display, exchangeRate)}</div>
+                <div className="text-xs font-normal text-slate-500">Salary Increment</div>
+                <div className="font-medium text-purple-800">{formatCurrency(salaryExposure, display, exchangeRate)}</div>
               </div>
             </div>
           </div>
@@ -592,9 +592,9 @@ function ChartCard({
               <div key={department} className="flex items-center justify-between rounded-xl border border-line bg-sage-soft px-3 py-2.5 text-sm transition-all hover:border-teal-soft hover:shadow-sm">
                 <div className="flex items-center gap-2">
                   <span className="inline-block h-3 w-3 rounded-full" style={{ background: CHART_COLORS.departments[index % CHART_COLORS.departments.length] }} />
-                  <span className="font-bold text-slate-700">{department}</span>
+                  <span className="font-medium text-slate-700">{department}</span>
                 </div>
-                <span className="font-black text-dark-teal">{formatCurrency(value, display, exchangeRate)}</span>
+                <span className="font-medium text-dark-teal">{formatCurrency(value, display, exchangeRate)}</span>
               </div>
             ))}
           </div>
@@ -660,7 +660,7 @@ function ChartCard({
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
             )}
           </div>
-          <h3 className="text-sm font-black text-ink truncate">{chartLabel}</h3>
+          <h3 className="text-sm font-semibold text-ink truncate">{chartLabel}</h3>
         </div>
         <select
           className="chart-selector flex-shrink-0"
@@ -678,31 +678,316 @@ function ChartCard({
   );
 }
 
+function cleanStatusLabel(status: SimulationResults["financialStatus"]): string {
+  if (status === "Needs Exchange Rate") return "Awaiting Inputs";
+  if (status === "Needs More Numbers") return "Awaiting Inputs";
+  return status;
+}
+
+function RevenueBaseline() {
+  return (
+    <div className="flex h-full min-h-44 items-end px-1 pb-1">
+      <div className="relative mb-1 h-px w-full bg-[#083f3c]">
+        {[0, 50, 100].map((left) => (
+          <span
+            key={left}
+            className="absolute top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#083f3c]"
+            style={{ left: `${left}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfitFlowSummary({
+  rows,
+  displayMoneyZero
+}: {
+  rows: { label: string; value: number; color: string }[];
+  displayMoneyZero: (value: number | null) => string;
+}) {
+  const max = Math.max(...rows.map((row) => row.value), 1);
+  return (
+    <div className="flex h-full min-h-44 flex-col justify-end">
+      {rows.some((row) => row.value > 0) && (
+        <div className="mb-5 space-y-2">
+          {rows.map((row) => (
+            <div key={row.label} className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${Math.max(4, (row.value / max) * 100)}%`, background: row.color }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="grid grid-cols-5 items-end gap-2">
+        {rows.map((row) => (
+          <div key={row.label} className="text-center">
+            <div className="text-[9px] leading-tight font-normal text-slate-700">{row.label}</div>
+            <div className="mt-1 text-[10px] font-medium text-ink">{displayMoneyZero(row.value)}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SplitRows({
+  bonusExposure,
+  salaryIncrementExposure,
+  displayMoneyZero
+}: {
+  bonusExposure: number;
+  salaryIncrementExposure: number;
+  displayMoneyZero: (value: number | null) => string;
+}) {
+  const max = Math.max(bonusExposure, salaryIncrementExposure, 1);
+  return (
+    <div className="space-y-5">
+      {[
+        { label: "Bonus", value: bonusExposure },
+        { label: "Salary Increment", value: salaryIncrementExposure }
+      ].map((row) => (
+        <div key={row.label} className="space-y-2">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="font-medium text-ink">{row.label}</span>
+            <span className="font-medium text-ink">{displayMoneyZero(row.value)}</span>
+          </div>
+          <div className="h-3 overflow-hidden rounded-full bg-[#dfe9e6]">
+            {row.value > 0 && (
+              <div
+                className="h-full rounded-full bg-[#0b4b46]"
+                style={{ width: `${Math.max(6, (row.value / max) * 100)}%` }}
+              />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SimulationChartShell({
+  title,
+  badge,
+  children
+}: {
+  title: string;
+  badge?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-h-[280px] flex-col rounded-2xl border border-[#dbe5dc] bg-white p-5 shadow-[0_16px_30px_rgba(15,61,58,0.1)]">
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <h3 className="text-base font-semibold text-ink">{title}</h3>
+        {badge && (
+          <span className="rounded-full bg-[#eef1ec] px-3 py-1 text-xs font-normal text-[#405a4d]">
+            {badge}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col">{children}</div>
+    </div>
+  );
+}
+
+function CompactValueBar({
+  label,
+  value,
+  formatted,
+  max,
+  color
+}: {
+  label: string;
+  value: number;
+  formatted: string;
+  max: number;
+  color: string;
+}) {
+  const width = max > 0 ? Math.min(100, Math.max(6, (value / max) * 100)) : 6;
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <span className="font-medium text-slate-600">{label}</span>
+        <span className="font-semibold text-ink">{formatted}</span>
+      </div>
+      <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full rounded-full" style={{ width: `${width}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
+export function SimulationChartGrid({
+  results,
+  assumptions,
+  directCostsKsh,
+  salaryPayoutsKsh,
+  displayMoneyZero
+}: {
+  results: SimulationResults;
+  assumptions: SelectedIncentiveAssumption[];
+  directCostsKsh: number | null;
+  salaryPayoutsKsh: number | null;
+  displayMoneyZero: (value: number | null) => string;
+}) {
+  const departmentExposure = assumptions.reduce<Record<string, number>>((totals, assumption) => {
+    const department = assumption.ruleSnapshot.department;
+    totals[department] = (totals[department] ?? 0) + assumption.estimatedExposureKsh;
+    return totals;
+  }, {});
+  const departmentEntries = Object.entries(departmentExposure).filter(([, value]) => value > 0);
+  const bonusExposure = assumptions
+    .filter((assumption) => assumption.ruleSnapshot.incentiveType !== "Salary Increment")
+    .reduce((total, assumption) => total + assumption.estimatedExposureKsh, 0);
+  const salaryIncrementExposure = assumptions
+    .filter((assumption) => assumption.ruleSnapshot.incentiveType === "Salary Increment" || assumption.ruleSnapshot.isPermanentSalaryIncrement)
+    .reduce((total, assumption) => total + assumption.estimatedExposureKsh, 0);
+  const revenueValue = results.revenueKsh ?? 0;
+  const equilibriumValue = results.equilibriumRevenueKsh ?? 0;
+  const revenueMax = Math.max(revenueValue, equilibriumValue, 1);
+  const profitRows = [
+    { label: "Revenue", value: revenueValue, color: "#14b8a6" },
+    { label: "Costs", value: directCostsKsh ?? 0, color: "#94a3b8" },
+    { label: "Salary Payouts", value: salaryPayoutsKsh ?? 0, color: "#0f766e" },
+    { label: "Incentives", value: results.totalIncentiveExposureKsh ?? 0, color: "#c8893d" },
+    { label: "Protected Profit", value: results.profitToProtectKsh ?? 0, color: "#115e59" }
+  ];
+  const departmentMax = Math.max(...departmentEntries.map(([, value]) => value), 1);
+
+  return (
+    <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+      <SimulationChartShell title="Revenue vs Equilibrium" badge="Threshold">
+        {revenueValue > 0 || equilibriumValue > 0 ? (
+          <div className="space-y-5">
+            <CompactValueBar label="Revenue" value={revenueValue} formatted={displayMoneyZero(results.revenueKsh)} max={revenueMax} color="#14b8a6" />
+            <CompactValueBar label="Equilibrium" value={equilibriumValue} formatted={displayMoneyZero(results.equilibriumRevenueKsh)} max={revenueMax} color="#c8893d" />
+          </div>
+        ) : (
+          <RevenueBaseline />
+        )}
+      </SimulationChartShell>
+
+      <SimulationChartShell title="Incentive Exposure by Department" badge={`${departmentEntries.length} dept`}>
+        {departmentEntries.length > 0 ? (
+          <div className="space-y-3">
+            {departmentEntries.slice(0, 5).map(([department, value], index) => (
+              <CompactValueBar
+                key={department}
+                label={department}
+                value={value}
+                formatted={displayMoneyZero(value)}
+                max={departmentMax}
+                color={CHART_COLORS.departments[index % CHART_COLORS.departments.length]}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="min-h-44" aria-label="No active department exposure yet" />
+        )}
+      </SimulationChartShell>
+
+      <SimulationChartShell title="Profit Flow" badge={cleanStatusLabel(results.financialStatus)}>
+        <ProfitFlowSummary rows={profitRows} displayMoneyZero={displayMoneyZero} />
+      </SimulationChartShell>
+
+      <SimulationChartShell title="Bonus vs Salary Increment" badge="Split">
+        <SplitRows
+          bonusExposure={bonusExposure}
+          salaryIncrementExposure={salaryIncrementExposure}
+          displayMoneyZero={displayMoneyZero}
+        />
+      </SimulationChartShell>
+    </section>
+  );
+}
+
+function SimulationMetricCard({ label, value, subtext }: { label: string; value: string; subtext: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#06413d] via-[#0b5f58] to-[#0f766e] p-5 text-white shadow-[0_18px_34px_rgba(6,65,61,0.22)]">
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/8" />
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-white/75">{label}</p>
+      <strong className="mt-2 block text-2xl font-medium leading-tight">{value}</strong>
+      <p className="mt-2 text-[11px] font-normal text-white/80">{subtext}</p>
+    </div>
+  );
+}
+
+function SimulationMetricCards({
+  results,
+  plannedRuleCount,
+  displayMoney,
+  displayMoneyDash
+}: {
+  results: SimulationResults;
+  plannedRuleCount: number;
+  displayMoney: (value: number | null) => string;
+  displayMoneyDash: (value: number | null) => string;
+}) {
+  return (
+    <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+      <SimulationMetricCard
+        label="Total Incentive Exposure"
+        value={displayMoney(results.totalIncentiveExposureKsh)}
+        subtext={`${plannedRuleCount} planned incentive rules`}
+      />
+      <SimulationMetricCard
+        label="Profit Before Incentives"
+        value={displayMoneyDash(results.profitBeforeIncentivesKsh)}
+        subtext="Needs revenue and cost inputs"
+      />
+      <SimulationMetricCard
+        label="Profit After Incentives"
+        value={displayMoneyDash(results.profitAfterIncentivesKsh)}
+        subtext="Calculated after incentive exposure"
+      />
+      <SimulationMetricCard
+        label="Equilibrium Revenue"
+        value={displayMoneyDash(results.equilibriumRevenueKsh)}
+        subtext="Minimum revenue threshold"
+      />
+      <SimulationMetricCard
+        label="Additional Revenue Needed"
+        value={displayMoneyDash(results.additionalRevenueNeededKsh)}
+        subtext="Needed to stay above protected profit"
+      />
+      <SimulationMetricCard
+        label="Affordability Status"
+        value={cleanStatusLabel(results.financialStatus)}
+        subtext={cleanStatusLabel(results.financialStatus).includes("Inputs") ? "Complete missing inputs" : "Based on current simulation"}
+      />
+    </section>
+  );
+}
+
 function ScenarioSummary({ results, displayMoney }: { results: SimulationResults; displayMoney: (v: number | null) => string }) {
   const status = results.financialStatus;
   const statusColor = status === "Safe" ? "safe" : status === "Risky" ? "risk" : status === "Close" ? "warn" : "info";
+  const statusLabel = cleanStatusLabel(status);
 
   return (
     <section className="compact-panel p-5 stagger-7">
       <div className="flex items-center gap-3 mb-4">
-        <h3 className="text-lg font-black text-ink">Scenario Summary</h3>
+        <h3 className="text-lg font-semibold text-ink">Scenario Summary</h3>
         <span className={`badge badge-${statusColor}`}>
           <StatusIcon status={status} />
-          <span className="ml-1">{status}</span>
+          <span className="ml-1">{statusLabel}</span>
         </span>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl bg-sage-soft p-3">
-          <div className="text-xs font-bold uppercase text-slate-500">Total Exposure</div>
-          <div className="mt-1 text-lg font-black text-dark-teal">{displayMoney(results.totalIncentiveExposureKsh)}</div>
+          <div className="text-xs font-medium uppercase text-slate-500">Total Exposure</div>
+          <div className="mt-1 text-lg font-medium text-dark-teal">{displayMoney(results.totalIncentiveExposureKsh)}</div>
         </div>
         <div className="rounded-xl bg-sage-soft p-3">
-          <div className="text-xs font-bold uppercase text-slate-500">Profit After Incentives</div>
-          <div className="mt-1 text-lg font-black text-dark-teal">{displayMoney(results.profitAfterIncentivesKsh)}</div>
+          <div className="text-xs font-medium uppercase text-slate-500">Profit After Incentives</div>
+          <div className="mt-1 text-lg font-medium text-dark-teal">{displayMoney(results.profitAfterIncentivesKsh)}</div>
         </div>
         <div className="rounded-xl bg-sage-soft p-3">
-          <div className="text-xs font-bold uppercase text-slate-500">Revenue Gap</div>
-          <div className="mt-1 text-lg font-black text-dark-teal">{displayMoney(results.additionalRevenueNeededKsh)}</div>
+          <div className="text-xs font-medium uppercase text-slate-500">Revenue Gap</div>
+          <div className="mt-1 text-lg font-medium text-dark-teal">{displayMoney(results.additionalRevenueNeededKsh)}</div>
         </div>
       </div>
     </section>
@@ -739,7 +1024,7 @@ function BehaviorRiskCheck({ results }: { results: SimulationResults }) {
 
   return (
     <section className="compact-panel p-5 stagger-8">
-      <h3 className="text-lg font-black text-ink mb-4">Simple Behavior-Risk Check</h3>
+      <h3 className="text-lg font-semibold text-ink mb-4">Simple Behavior-Risk Check</h3>
       <div className="space-y-3">
         {checks.map((check) => {
           const hasValue = isFiniteNumber(check.value);
@@ -749,10 +1034,10 @@ function BehaviorRiskCheck({ results }: { results: SimulationResults }) {
           return (
             <div key={check.label} className={`flex items-center justify-between rounded-xl border px-3 py-2.5 ${statusClass}`}>
               <div>
-                <div className={`text-sm font-bold ${textClass}`}>{check.label}</div>
+                <div className={`text-sm font-medium ${textClass}`}>{check.label}</div>
                 <div className="text-xs text-slate-500">{check.description}</div>
               </div>
-              <div className={`text-sm font-black ${textClass}`}>
+              <div className={`text-sm font-medium ${textClass}`}>
                 {hasValue ? ratioLabel(check.value) : "—"}
               </div>
             </div>
@@ -827,17 +1112,17 @@ function QualifyingModal({
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <div className="drawer max-w-3xl">
         <div className="border-b border-line px-5 py-4">
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-teal">Qualifying Employees</p>
-          <h2 className="mt-1 text-2xl font-black text-ink">{rule.ruleName}</h2>
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-teal">Qualifying Employees</p>
+          <h2 className="mt-1 text-2xl font-semibold text-ink">{rule.ruleName}</h2>
         </div>
         <div className="space-y-4 p-5">
           <div className="grid gap-3 rounded-2xl border border-line bg-sage-soft p-4 text-sm md:grid-cols-2">
-            <div><span className="font-bold text-slate-600">Department:</span> {rule.department}</div>
-            <div><span className="font-bold text-slate-600">Payout:</span> <strong>{summarizePayout(rule)}</strong></div>
-            <div><span className="font-bold text-slate-600">Frequency:</span> {rule.payoutFrequency || rule.triggerFrequency || "Configured by rule"}</div>
-            <div><span className="font-bold text-slate-600">Currency:</span> {rule.currency ?? rule.maxPayoutCurrency ?? "Configured by rule"}</div>
-            <div><span className="font-bold text-slate-600">Formula type:</span> {rule.formulaType ?? "fixed"}</div>
-            <div><span className="font-bold text-slate-600">Estimated exposure:</span> <strong>{formatRuleCurrency(exposure.exposureKsh, "KSH")}</strong></div>
+            <div><span className="font-medium text-slate-600">Department:</span> {rule.department}</div>
+            <div><span className="font-medium text-slate-600">Payout:</span> <span className="font-medium">{summarizePayout(rule)}</span></div>
+            <div><span className="font-medium text-slate-600">Frequency:</span> {rule.payoutFrequency || rule.triggerFrequency || "Configured by rule"}</div>
+            <div><span className="font-medium text-slate-600">Currency:</span> {rule.currency ?? rule.maxPayoutCurrency ?? "Configured by rule"}</div>
+            <div><span className="font-medium text-slate-600">Formula type:</span> {rule.formulaType ?? "fixed"}</div>
+            <div><span className="font-medium text-slate-600">Estimated exposure:</span> <span className="font-medium">{formatRuleCurrency(exposure.exposureKsh, "KSH")}</span></div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
@@ -872,12 +1157,12 @@ function QualifyingModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-black uppercase tracking-[0.1em] text-slate-600">Note optional</label>
+            <label className="text-xs font-normal uppercase tracking-[0.1em] text-slate-600">Note optional</label>
             <textarea className="input min-h-20" value={note} onChange={(event) => setNote(event.target.value)} />
           </div>
 
           {exposure.warning && (
-            <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-bold text-amber-800">{exposure.warning}</p>
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-800">{exposure.warning}</p>
           )}
 
           <div className="flex flex-wrap justify-end gap-2">
@@ -890,7 +1175,174 @@ function QualifyingModal({
   );
 }
 
-export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
+function QualifyingEmployeesSection({
+  activeRules,
+  selectedRuleId,
+  onSelectRuleId,
+  onOpenSelectedRule,
+  assumptions,
+  displayMoney,
+  onEditAssumption,
+  onRemoveAssumption,
+  collapsible = false
+}: {
+  activeRules: IncentiveRule[];
+  selectedRuleId: string;
+  onSelectRuleId: (id: string) => void;
+  onOpenSelectedRule: () => void;
+  assumptions: SelectedIncentiveAssumption[];
+  displayMoney: (value: number | null) => string;
+  onEditAssumption: (assumption: SelectedIncentiveAssumption) => void;
+  onRemoveAssumption: (id: string) => void;
+  collapsible?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(!collapsible);
+  const showBody = !collapsible || expanded;
+
+  return (
+    <section className={collapsible ? "panel p-4 stagger-3" : "panel p-5 stagger-3"}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-start gap-2">
+          {collapsible && (
+            <button
+              type="button"
+              onClick={() => setExpanded((current) => !current)}
+              aria-label={expanded ? "Collapse Incentive Qualifying Employees" : "Expand Incentive Qualifying Employees"}
+              aria-expanded={expanded}
+              className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line bg-white text-slate-500 transition-colors hover:bg-sage-soft"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          )}
+          <div>
+            <h3 className={collapsible ? "text-base font-semibold text-ink" : "text-2xl font-semibold text-ink"}>Incentive Qualifying Employees</h3>
+            <p className={collapsible ? "mt-0.5 text-xs font-normal text-slate-500" : "mt-1 text-sm text-slate-600"}>
+              Select active incentive rules and enter how many employees, claims, clients, views, or milestones qualify.
+            </p>
+          </div>
+        </div>
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+          {activeRules.length === 0 ? (
+            <p className="rounded-xl border border-line bg-sage-soft px-3 py-2 text-sm font-medium text-slate-700">
+              No active incentive rules found. Add rules in Set Incentives first.
+            </p>
+          ) : (
+            <>
+              <select className="input min-w-72 font-medium" value={selectedRuleId} onChange={(event) => onSelectRuleId(event.target.value)}>
+                <option value="">Select Incentive</option>
+                {activeRules.map((rule) => (
+                  <option key={rule.id} value={rule.id}>{rule.ruleName}</option>
+                ))}
+              </select>
+              <button className="btn btn-primary" type="button" onClick={onOpenSelectedRule} disabled={!selectedRuleId}>Select Incentive</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {showBody && (
+      <>
+      <div className="table-wrap mt-5">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Incentive</th>
+              <th>Department</th>
+              <th>Type</th>
+              <th>Amount / Rate</th>
+              <th>Frequency</th>
+              <th>Qualifying Count / Metric</th>
+              <th>Estimated Exposure</th>
+              <th>Edit</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            {assumptions.map((assumption) => (
+              <tr key={assumption.id}>
+                <td>
+                  <div className="font-semibold text-ink">{assumption.ruleSnapshot.ruleName}</div>
+                  {assumption.warning && <div className="mt-1 text-xs font-normal text-amber-700">{assumption.warning}</div>}
+                </td>
+                <td><span className="badge">{assumption.ruleSnapshot.department}</span></td>
+                <td>
+                  <span className={`badge ${assumption.ruleSnapshot.incentiveType === "Salary Increment" ? "badge-info" : assumption.ruleSnapshot.incentiveType === "Bonus" ? "badge-safe" : ""}`}>
+                    {assumption.ruleSnapshot.incentiveType}
+                  </span>
+                </td>
+                <td><span className="font-medium text-dark-teal">{summarizePayout(assumption.ruleSnapshot)}</span></td>
+                <td>{assumption.ruleSnapshot.payoutFrequency || assumption.ruleSnapshot.triggerFrequency || "Configured by rule"}</td>
+                <td>
+                  <span className="font-medium">{assumption.qualifyingCount}</span>
+                  {isFiniteNumber(assumption.metricValue) && <span> | metric {assumption.metricValue}</span>}
+                  {isFiniteNumber(assumption.collectionPercentage) && <span> | collection {assumption.collectionPercentage}%</span>}
+                </td>
+                <td><span className="font-medium text-dark-teal">{displayMoney(assumption.estimatedExposureKsh)}</span></td>
+                <td>
+                  <button
+                    className="btn btn-secondary px-3 py-2 text-xs"
+                    type="button"
+                    onClick={() => onEditAssumption(assumption)}
+                  >
+                    Edit
+                  </button>
+                </td>
+                <td>
+                  <button className="btn btn-ghost px-3 py-2 text-xs" type="button" onClick={() => onRemoveAssumption(assumption.id)}>
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {assumptions.length === 0 && (
+        <div className="mt-4 rounded-2xl border border-dashed border-line bg-white p-6 text-center">
+          <div className="empty-state-icon mx-auto mb-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v-2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-slate-600">No incentive assumptions added yet.</p>
+          <p className="mt-1 text-xs text-slate-400">Select an active incentive rule above to begin.</p>
+        </div>
+      )}
+      </>
+      )}
+    </section>
+  );
+}
+
+export function SimulationClient({
+  rules,
+  hideDetails = false,
+  darkHero = false,
+  hideHero = false,
+  onlyQualifyingEmployees = false,
+  onAssumptionsChange
+}: {
+  rules: IncentiveRule[];
+  hideDetails?: boolean;
+  darkHero?: boolean;
+  hideHero?: boolean;
+  onlyQualifyingEmployees?: boolean;
+  /** Optional: notified whenever the recalculated assumptions change. Used to surface live
+   *  exposure data to a parent (e.g. the Dashboard) without altering this component's own state/behavior. */
+  onAssumptionsChange?: (assumptions: SelectedIncentiveAssumption[]) => void;
+}) {
   const activeRules = useMemo(() => getActiveRules(rules), [rules]);
   const [controls, setControls] = useState<SimulationControls>(initialControls);
   const [selectedRuleId, setSelectedRuleId] = useState("");
@@ -900,8 +1352,6 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState("");
   const [currencyMessage, setCurrencyMessage] = useState("Exchange rate can be edited manually.");
-  const [chart1, setChart1] = useState<ChartType>("revenue-vs-equilibrium");
-  const [chart2, setChart2] = useState<ChartType>("bonus-vs-salary");
 
   const exchangeRate = numericValue(controls.exchangeRate);
   const inputCurrency: CurrencyCode = controls.currencyDisplay === "USD" ? "USD" : "KSH";
@@ -922,6 +1372,10 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
       }),
     [assumptions, exchangeRate, controls.simulationPeriod]
   );
+
+  useEffect(() => {
+    onAssumptionsChange?.(recalculatedAssumptions);
+  }, [recalculatedAssumptions, onAssumptionsChange]);
 
   const results = useMemo<SimulationResults>(() => {
     const revenueKsh = controls.revenue === "" ? null : toKsh(controls.revenue, inputCurrency, exchangeRate);
@@ -1043,21 +1497,52 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
   }
 
   const displayMoney = (value: number | null) => formatCurrency(value, controls.currencyDisplay, exchangeRate);
+  const zeroMoney = controls.currencyDisplay === "USD" ? "$0" : "KSh 0";
+  const displayMoneyZero = (value: number | null) => {
+    if (!isFiniteNumber(value) || value === 0) return zeroMoney;
+    const formatted = displayMoney(value);
+    return formatted === "Needs rate" ? "Awaiting rate" : formatted;
+  };
+  const displayMoneyDash = (value: number | null) => {
+    if (!isFiniteNumber(value)) return "—";
+    const formatted = displayMoney(value);
+    return formatted === "Needs rate" ? "—" : formatted;
+  };
+  const directCostsKsh = controls.directCosts === "" ? null : toKsh(controls.directCosts, inputCurrency, exchangeRate);
+  const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : toKsh(controls.salaryPayouts, inputCurrency, exchangeRate);
   const statusTone = results.financialStatus === "Risky" ? "risk" : results.financialStatus === "Safe" ? "safe" : results.financialStatus === "Close" ? "close" : undefined;
 
+  const qualifyingEmployeesSection = (
+    <QualifyingEmployeesSection
+      activeRules={activeRules}
+      selectedRuleId={selectedRuleId}
+      onSelectRuleId={setSelectedRuleId}
+      onOpenSelectedRule={openSelectedRule}
+      assumptions={recalculatedAssumptions}
+      displayMoney={displayMoney}
+      onEditAssumption={(assumption) => {
+        setEditingAssumption(assumption);
+        setModalRule(assumption.ruleSnapshot);
+      }}
+      onRemoveAssumption={(id) => setAssumptions((current) => current.filter((item) => item.id !== id))}
+      collapsible={onlyQualifyingEmployees}
+    />
+  );
+
   return (
-    <div className="space-y-5">
-      <section className="panel p-5 stagger-1">
+    <div className="space-y-5 bg-[#fbfdfb] p-5 lg:p-8">
+      {!hideHero && (
+      <section className={`overflow-hidden rounded-2xl border p-5 stagger-1 ${darkHero ? "border-[#0d3f3b]/25 bg-gradient-to-br from-white via-[#f0faf9] to-[#0d3f3b] shadow-[0_18px_40px_rgba(6,65,61,0.18)]" : "border-teal-50 bg-gradient-to-br from-white via-white to-teal-50 shadow-[0_18px_40px_rgba(15,118,110,0.08)]"}`}>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-3xl font-black text-ink">Incentive Simulation</h2>
-              {results.financialStatus !== "Needs More Numbers" && results.financialStatus !== "Needs Exchange Rate" && (
-                <span className={`badge ${statusTone === "safe" ? "badge-safe" : statusTone === "risk" ? "badge-risk" : statusTone === "close" ? "badge-warn" : ""}`}>
-                  <StatusIcon status={results.financialStatus} />
-                  <span className="ml-1">{results.financialStatus}</span>
-                </span>
-              )}
+              <h2 className={`bg-gradient-to-r bg-clip-text text-3xl font-semibold text-transparent ${darkHero ? "from-[#0f766e] to-[#042f2e]" : "from-[#14b8a6] to-[#0f3d3a]"}`}>
+                Incentive Simulation
+              </h2>
+              <span className={`badge ${statusTone === "safe" ? "badge-safe" : statusTone === "risk" ? "badge-risk" : statusTone === "close" ? "badge-warn" : ""}`}>
+                <StatusIcon status={results.financialStatus} />
+                <span className="ml-1">{cleanStatusLabel(results.financialStatus)}</span>
+              </span>
             </div>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               Estimate incentive exposure, protected profit, safe payout capacity, and revenue gaps from active Set
@@ -1065,7 +1550,7 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <select className="input h-10 min-w-56 font-bold" value={selectedScenarioId} onChange={(event) => loadScenario(event.target.value)}>
+            <select className="input h-10 min-w-56 font-medium" value={selectedScenarioId} onChange={(event) => loadScenario(event.target.value)}>
               <option value="">Saved scenarios</option>
               {savedScenarios.map((scenario) => (
                 <option key={scenario.id} value={scenario.id}>{scenario.name}</option>
@@ -1082,6 +1567,27 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
           </div>
         </div>
       </section>
+      )}
+
+      {onlyQualifyingEmployees ? (
+        qualifyingEmployeesSection
+      ) : (
+      !hideDetails && (
+      <>
+      <SimulationChartGrid
+        results={results}
+        assumptions={recalculatedAssumptions}
+        directCostsKsh={directCostsKsh}
+        salaryPayoutsKsh={salaryPayoutsKsh}
+        displayMoneyZero={displayMoneyZero}
+      />
+
+      <SimulationMetricCards
+        results={results}
+        plannedRuleCount={recalculatedAssumptions.length}
+        displayMoney={displayMoneyZero}
+        displayMoneyDash={displayMoneyDash}
+      />
 
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8 stagger-2">
         <ControlField label="Revenue" value={controls.revenue} onChange={(value) => updateControl("revenue", value)} />
@@ -1098,21 +1604,21 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
           onChange={(value) => updateControl("currencyDisplay", value)}
         />
         <div className="compact-panel p-3">
-          <label className="text-xs font-black uppercase tracking-[0.1em] text-slate-600">Exchange Rate</label>
+          <label className="text-xs font-medium uppercase tracking-[0.1em] text-slate-600">Exchange Rate</label>
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-600">1 USD =</span>
+            <span className="text-xs font-medium text-slate-600">1 USD =</span>
             <input
-              className="input h-10 min-w-0 px-2 text-center font-black text-dark-teal"
+              className="input h-10 min-w-0 px-2 text-center font-medium text-dark-teal"
               value={controls.exchangeRate}
               onChange={(event) => updateControl("exchangeRate", parseNumericInput(event.target.value))}
               inputMode="decimal"
             />
-            <span className="text-xs font-bold text-slate-600">KSh</span>
+            <span className="text-xs font-medium text-slate-600">KSh</span>
           </div>
-          <button className="mt-2 w-full rounded-full border border-line bg-white px-3 py-1.5 text-xs font-black text-dark-teal hover:bg-sage-soft transition-colors" type="button" onClick={fetchLatestRate}>
+          <button className="mt-2 w-full rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-dark-teal hover:bg-sage-soft transition-colors" type="button" onClick={fetchLatestRate}>
             Fetch latest
           </button>
-          <p className="mt-1 text-xs font-semibold text-slate-500">{currencyMessage}</p>
+          <p className="mt-1 text-xs font-normal text-slate-500">{currencyMessage}</p>
         </div>
         <SelectControl
           label="Simulation Period"
@@ -1125,10 +1631,10 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
           onChange={(value) => updateControl("simulationPeriod", value)}
         />
         <div className="compact-panel p-3">
-          <label className="text-xs font-black uppercase tracking-[0.1em] text-slate-600">Close Buffer</label>
+          <label className="text-xs font-medium uppercase tracking-[0.1em] text-slate-600">Close Buffer</label>
           <div className="mt-2 grid grid-cols-[1fr_88px] gap-2">
-            <input className="input h-10 font-black text-dark-teal" value={controls.closeBuffer} onChange={(event) => updateControl("closeBuffer", parseNumericInput(event.target.value))} />
-            <select className="input h-10 font-black text-dark-teal" value={controls.closeBufferMode} onChange={(event) => updateControl("closeBufferMode", event.target.value as "amount" | "percent")}>
+            <input className="input h-10 font-medium text-dark-teal" value={controls.closeBuffer} onChange={(event) => updateControl("closeBuffer", parseNumericInput(event.target.value))} />
+            <select className="input h-10 font-medium text-dark-teal" value={controls.closeBufferMode} onChange={(event) => updateControl("closeBufferMode", event.target.value as "amount" | "percent")}>
               <option value="amount">Amount</option>
               <option value="percent">%</option>
             </select>
@@ -1136,151 +1642,18 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
         </div>
       </section>
 
-      <section className="panel p-5 stagger-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h3 className="text-2xl font-black text-ink">Incentive Qualifying Employees</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Select active incentive rules and enter how many employees, claims, clients, views, or milestones qualify.
-            </p>
-          </div>
-          <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
-            {activeRules.length === 0 ? (
-              <p className="rounded-xl border border-line bg-sage-soft px-3 py-2 text-sm font-bold text-slate-700">
-                No active incentive rules found. Add rules in Set Incentives first.
-              </p>
-            ) : (
-              <>
-                <select className="input min-w-72 font-bold" value={selectedRuleId} onChange={(event) => setSelectedRuleId(event.target.value)}>
-                  <option value="">Select Incentive</option>
-                  {activeRules.map((rule) => (
-                    <option key={rule.id} value={rule.id}>{rule.ruleName}</option>
-                  ))}
-                </select>
-                <button className="btn btn-primary" type="button" onClick={openSelectedRule} disabled={!selectedRuleId}>Select Incentive</button>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="table-wrap mt-5">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Incentive</th>
-                <th>Department</th>
-                <th>Type</th>
-                <th>Amount / Rate</th>
-                <th>Frequency</th>
-                <th>Qualifying Count / Metric</th>
-                <th>Estimated Exposure</th>
-                <th>Edit</th>
-                <th>Remove</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recalculatedAssumptions.map((assumption) => (
-                <tr key={assumption.id}>
-                  <td>
-                    <div className="font-black text-ink">{assumption.ruleSnapshot.ruleName}</div>
-                    {assumption.warning && <div className="mt-1 text-xs font-bold text-amber-700">{assumption.warning}</div>}
-                  </td>
-                  <td><span className="badge">{assumption.ruleSnapshot.department}</span></td>
-                  <td>
-                    <span className={`badge ${assumption.ruleSnapshot.incentiveType === "Salary Increment" ? "badge-info" : assumption.ruleSnapshot.incentiveType === "Bonus" ? "badge-safe" : ""}`}>
-                      {assumption.ruleSnapshot.incentiveType}
-                    </span>
-                  </td>
-                  <td><strong className="text-dark-teal">{summarizePayout(assumption.ruleSnapshot)}</strong></td>
-                  <td>{assumption.ruleSnapshot.payoutFrequency || assumption.ruleSnapshot.triggerFrequency || "Configured by rule"}</td>
-                  <td>
-                    <span className="font-bold">{assumption.qualifyingCount}</span>
-                    {isFiniteNumber(assumption.metricValue) && <span> | metric {assumption.metricValue}</span>}
-                    {isFiniteNumber(assumption.collectionPercentage) && <span> | collection {assumption.collectionPercentage}%</span>}
-                  </td>
-                  <td><strong className="text-dark-teal">{displayMoney(assumption.estimatedExposureKsh)}</strong></td>
-                  <td>
-                    <button
-                      className="btn btn-secondary px-3 py-2 text-xs"
-                      type="button"
-                      onClick={() => {
-                        setEditingAssumption(assumption);
-                        setModalRule(assumption.ruleSnapshot);
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn btn-ghost px-3 py-2 text-xs" type="button" onClick={() => setAssumptions((current) => current.filter((item) => item.id !== assumption.id))}>
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {recalculatedAssumptions.length === 0 && (
-          <div className="mt-4 rounded-2xl border border-dashed border-line bg-white p-6 text-center">
-            <div className="empty-state-icon mx-auto mb-2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v-2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
-              </svg>
-            </div>
-            <p className="text-sm font-bold text-slate-600">No incentive assumptions added yet.</p>
-            <p className="mt-1 text-xs text-slate-400">Select an active incentive rule above to begin.</p>
-          </div>
-        )}
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2 stagger-4">
-        <ChartCard
-          selectedChart={chart1}
-          onChartChange={setChart1}
-          results={results}
-          display={controls.currencyDisplay}
-          exchangeRate={exchangeRate}
-          assumptions={recalculatedAssumptions}
-          chartSlot={1}
-        />
-        <ChartCard
-          selectedChart={chart2}
-          onChartChange={setChart2}
-          results={results}
-          display={controls.currencyDisplay}
-          exchangeRate={exchangeRate}
-          assumptions={recalculatedAssumptions}
-          chartSlot={2}
-        />
-      </section>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 stagger-5">
-        <ResultCard label="Revenue" value={displayMoney(results.revenueKsh)} />
-        <ResultCard label="Total Incentive Exposure" value={displayMoney(results.totalIncentiveExposureKsh)} />
-        <ResultCard label="Profit Before Incentives" value={displayMoney(results.profitBeforeIncentivesKsh)} />
-        <ResultCard label="Profit After Incentives" value={displayMoney(results.profitAfterIncentivesKsh)} />
-        <ResultCard label="Profit to Protect" value={displayMoney(results.profitToProtectKsh)} />
-        <ResultCard label="Equilibrium Revenue" value={displayMoney(results.equilibriumRevenueKsh)} />
-        <ResultCard label="Additional Revenue Needed" value={displayMoney(results.additionalRevenueNeededKsh)} />
-        <ResultCard label="Revenue Surplus" value={displayMoney(results.revenueSurplusKsh)} />
-        <ResultCard label="Maximum Safe Payout" value={displayMoney(results.maximumSafePayoutKsh)} />
-        <ResultCard label="Maximum Safe Monthly Increment" value={displayMoney(results.maximumSafeMonthlyIncrementKsh)} />
-        <ResultCard label="Sustainability Ratio" value={ratioLabel(results.sustainabilityRatio)} />
-        <ResultCard label="Base Salary Ratio" value={ratioLabel(results.baseSalaryRatio)} />
-        <ResultCard label="Bonus Ratio" value={ratioLabel(results.bonusRatio)} />
-        <ResultCard label="Salary Increment Ratio" value={ratioLabel(results.salaryIncrementRatio)} />
-        <ResultCard label="Break-Even Days" value={numberLabel(results.breakEvenDays)} />
-        <ResultCard label="Financial Status" value={results.financialStatus} tone={statusTone} />
-      </section>
+      {qualifyingEmployeesSection}
 
       <ScenarioSummary results={results} displayMoney={displayMoney} />
 
       <BehaviorRiskCheck results={results} />
 
       <section className="compact-panel p-4 stagger-8">
-        <p className="text-sm font-semibold leading-6 text-slate-600">{scenarioStorageNote}</p>
+        <p className="text-sm font-normal leading-6 text-slate-600">{scenarioStorageNote}</p>
       </section>
+      </>
+      )
+      )}
 
       {modalRule && (
         <QualifyingModal
