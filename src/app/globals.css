@@ -29,6 +29,7 @@
   --cb-border-strong: #cfd6c8;
   --cb-surface: #ffffff;
   --cb-surface-muted: #f8faf7;
+  --cb-surface-gradient: linear-gradient(160deg, #ffffff 0%, #eef6f5 55%, #dcefec 100%);
   --cb-radius-pill: 999px;
   --cb-radius-xl: 22px;
   --cb-radius-lg: 16px;
@@ -67,7 +68,8 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.008em;
-  background: var(--cb-gradient-mesh), var(--cb-bg);
+  background: linear-gradient(160deg, #ffffff 0%, #f2f9f8 45%, #dcefec 100%);
+  background-attachment: fixed;
   color: var(--cb-text);
 }
 
@@ -99,7 +101,7 @@ button {
 
 .panel {
   border: 1px solid var(--cb-border);
-  background: var(--cb-surface);
+  background: var(--cb-surface-gradient);
   border-radius: var(--cb-radius-xl);
   box-shadow: var(--cb-shadow-md);
   transition: box-shadow 0.25s ease, transform 0.25s ease;
@@ -111,7 +113,7 @@ button {
 
 .compact-panel {
   border: 1px solid var(--cb-border);
-  background: var(--cb-surface);
+  background: var(--cb-surface-gradient);
   border-radius: var(--cb-radius-lg);
   box-shadow: var(--cb-shadow-sm);
   transition: box-shadow 0.25s ease, transform 0.25s ease;
@@ -146,7 +148,7 @@ button {
   border-radius: var(--cb-radius-pill);
   border: 1px solid transparent;
   padding: 0.62rem 0.95rem;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
   transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
@@ -201,7 +203,7 @@ button {
   color: var(--cb-brand);
   padding: 0.25rem 0.55rem;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   transition: background 150ms ease, border-color 150ms ease;
 }
@@ -239,7 +241,7 @@ button {
   color: var(--cb-brand);
   padding: 0.6rem 1.1rem;
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 500;
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
 }
 
@@ -253,6 +255,7 @@ button {
   background: var(--cb-gradient-brand-flat);
   border-color: transparent;
   color: var(--cb-text-on-brand);
+  font-weight: 600;
   box-shadow: 0 2px 8px rgba(14, 61, 58, 0.25);
 }
 
@@ -373,7 +376,7 @@ button {
   min-height: 180px;
   border-radius: var(--cb-radius-lg);
   border: 1px solid var(--cb-border);
-  background: var(--cb-surface);
+  background: var(--cb-surface-gradient);
   padding: 1rem;
   box-shadow: var(--cb-shadow-sm);
   transition: box-shadow 0.25s ease, transform 0.25s ease;
@@ -392,7 +395,7 @@ button {
   color: var(--cb-text);
   padding: 0.35rem 1.8rem 0.35rem 0.6rem;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 500;
   outline: none;
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235d6657' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
@@ -454,6 +457,113 @@ button {
 
 .pie-segment:hover {
   opacity: 0.85;
+}
+
+/* Dashboard chart card animations (used by DashboardCharts). */
+.dash-line-path {
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
+  animation: dash-draw 1.2s ease-out forwards;
+}
+
+@keyframes dash-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.dash-area {
+  animation: dash-fade 1s ease-out both;
+}
+
+@keyframes dash-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dash-bar-el {
+  transform-origin: bottom;
+  animation: dash-bar-grow 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes dash-bar-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.dash-pie-group {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: dash-pie-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes dash-pie-in {
+  from { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.dash-pie-slice {
+  animation: dash-slice-fade 0.5s ease-out both;
+}
+
+@keyframes dash-slice-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* "Enter your data" blinking alert (shown while dashboard charts are in placeholder state). */
+@keyframes blink-alert {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.blink-alert {
+  animation: blink-alert 1.1s ease-in-out infinite;
+}
+
+/* Affordability Status card — whole-card pulsing glow per status. */
+@keyframes card-pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.28), 0 0 32px 6px rgba(220, 38, 38, 0.45); }
+}
+
+.card-pulse-red {
+  animation: card-pulse-red 1.5s ease-in-out infinite;
+}
+
+@keyframes card-pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0.24), 0 0 32px 6px rgba(22, 163, 74, 0.4); }
+}
+
+.card-pulse-green {
+  animation: card-pulse-green 1.8s ease-in-out infinite;
+}
+
+@keyframes card-pulse-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(217, 119, 6, 0.26), 0 0 32px 6px rgba(217, 119, 6, 0.42); }
+}
+
+.card-pulse-amber {
+  animation: card-pulse-amber 1.6s ease-in-out infinite;
+}
+
+@keyframes card-pulse-orange {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(234, 88, 12, 0.26), 0 0 32px 6px rgba(234, 88, 12, 0.42); }
+}
+
+.card-pulse-orange {
+  animation: card-pulse-orange 1.5s ease-in-out infinite;
+}
+
+/* Dashboard explanation panel — fades/slides in when the selected metric changes. */
+@keyframes dash-explanation-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dash-explanation-in {
+  animation: dash-explanation-in 0.35s ease-out both;
 }
 
 @keyframes fade-in {
