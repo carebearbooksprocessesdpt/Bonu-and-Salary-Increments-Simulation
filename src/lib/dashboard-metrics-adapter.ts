@@ -1,4 +1,4 @@
-import { formatCurrency, isFiniteNumber, toKsh } from "./currency";
+import { formatCurrency, isFiniteNumber } from "./currency";
 import {
   calculateAdditionalRevenueNeeded,
   calculateEquilibriumRevenue,
@@ -11,11 +11,10 @@ import {
 } from "./simulation-formulas";
 import type { CurrencyCode, SimulationResults } from "./types";
 
-// TODO: The Dashboard does not yet expose its own exchange-rate input (that control lives
-// on the Incentive Simulation page). Until a live rate is wired in here, USD<->KSH display
-// conversion uses this fixed reference rate. This does not affect any calculation/formula —
-// it only affects how already-computed KSH amounts are displayed in USD, and vice versa.
-export const DASHBOARD_REFERENCE_EXCHANGE_RATE = 130;
+// The dashboard uses the same display conversion as the simulation page. If no exchange rate
+// is supplied, USD display falls back to a safe "Needs Exchange Rate" state instead of
+// silently applying a hard-coded conversion rate.
+export const DASHBOARD_REFERENCE_EXCHANGE_RATE = Number(process.env.NEXT_PUBLIC_EXCHANGE_RATE ?? 0);
 
 export interface DashboardVariableInputs {
   revenue: number;
@@ -28,8 +27,8 @@ export interface DashboardVariableInputs {
   exchangeRate?: number;
 }
 
-function toKshOrNull(value: number, currency: CurrencyCode, exchangeRate: number): number | null {
-  return value > 0 ? toKsh(value, currency, exchangeRate) : null;
+function toKshOrNull(value: number): number | null {
+  return value > 0 ? value : null;
 }
 
 /**
@@ -38,11 +37,10 @@ function toKshOrNull(value: number, currency: CurrencyCode, exchangeRate: number
  * adapter only, not a reimplementation of the math.
  */
 export function computeDashboardResults(inputs: DashboardVariableInputs): SimulationResults {
-  const exchangeRate = inputs.exchangeRate ?? DASHBOARD_REFERENCE_EXCHANGE_RATE;
-  const revenueKsh = toKshOrNull(inputs.revenue, inputs.currencyDisplay, exchangeRate);
-  const directCostsKsh = toKshOrNull(inputs.totalCosts, inputs.currencyDisplay, exchangeRate);
-  const salaryPayoutsKsh = toKshOrNull(inputs.salaryPayouts, inputs.currencyDisplay, exchangeRate);
-  const profitToProtectKsh = toKshOrNull(inputs.profitToProtect, inputs.currencyDisplay, exchangeRate);
+  const revenueKsh = toKshOrNull(inputs.revenue);
+  const directCostsKsh = toKshOrNull(inputs.totalCosts);
+  const salaryPayoutsKsh = toKshOrNull(inputs.salaryPayouts);
+  const profitToProtectKsh = toKshOrNull(inputs.profitToProtect);
   const totalIncentiveExposureKsh = isFiniteNumber(inputs.totalIncentiveExposureKsh) ? inputs.totalIncentiveExposureKsh : 0;
 
   const profitBeforeIncentivesKsh = calculateProfitBeforeIncentives(revenueKsh, directCostsKsh, salaryPayoutsKsh);
@@ -68,6 +66,9 @@ export function computeDashboardResults(inputs: DashboardVariableInputs): Simula
     baseSalaryRatio: null,
     bonusRatio: null,
     salaryIncrementRatio: null,
+    bonusExposureKsh: 0,
+    salaryIncrementExposureKsh: 0,
+    totalCompensationCostKsh: salaryPayoutsKsh !== null ? salaryPayoutsKsh + totalIncentiveExposureKsh : null,
     breakEvenDays: null,
     financialStatus: determineFinancialStatus({
       exchangeRateNeeded: false,
@@ -83,7 +84,7 @@ export function computeDashboardResults(inputs: DashboardVariableInputs): Simula
 export function formatDashboardMoney(
   valueKsh: number | null,
   currencyDisplay: CurrencyCode,
-  exchangeRate: number = DASHBOARD_REFERENCE_EXCHANGE_RATE
+  exchangeRate?: number | null
 ): string {
   const safeValueKsh = isFiniteNumber(valueKsh) ? valueKsh : 0;
   return formatCurrency(safeValueKsh, currencyDisplay, exchangeRate);

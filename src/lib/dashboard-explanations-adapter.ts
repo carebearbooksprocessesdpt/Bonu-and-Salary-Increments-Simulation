@@ -1,5 +1,5 @@
 import { isFiniteNumber, fromKsh } from "./currency";
-import { DASHBOARD_REFERENCE_EXCHANGE_RATE, formatDashboardMoney } from "./dashboard-metrics-adapter";
+import { formatDashboardMoney } from "./dashboard-metrics-adapter";
 import { computeBonusSalarySplitKsh, groupExposureByDepartment } from "./dashboard-groupings";
 import type { CurrencyCode, SelectedIncentiveAssumption, SimulationResults } from "./types";
 
@@ -34,7 +34,7 @@ export interface DashboardExplanationInputs {
  */
 export function buildDashboardNumberCards(input: DashboardExplanationInputs): DashboardNumberCard[] {
   const { results, currencyDisplay, assumptions, hasRealData } = input;
-  const exchangeRate = input.exchangeRate ?? DASHBOARD_REFERENCE_EXCHANGE_RATE;
+  const exchangeRate = input.exchangeRate ?? null;
   const money = (valueKsh: number | null) => formatDashboardMoney(valueKsh, currencyDisplay, exchangeRate);
   const toDisplay = (valueKsh: number | null): number => {
     if (!isFiniteNumber(valueKsh)) return 0;

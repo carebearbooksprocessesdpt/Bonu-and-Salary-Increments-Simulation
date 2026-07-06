@@ -25,6 +25,12 @@ export function fromKsh(valueKsh: number, currency: CurrencyDisplay, exchangeRat
   return valueKsh / rate;
 }
 
+export function toDisplayValue(valueKsh: number | null | undefined, display: CurrencyDisplay = "KSH", exchangeRate?: number | null): number | null {
+  if (!isFiniteNumber(valueKsh)) return null;
+  if (display === "KSH") return valueKsh;
+  return fromKsh(valueKsh, "USD", exchangeRate);
+}
+
 export function formatCurrency(
   valueKsh: number | null | undefined,
   display: CurrencyDisplay = "KSH",
@@ -32,29 +38,22 @@ export function formatCurrency(
 ): string {
   if (!isFiniteNumber(valueKsh)) return "Needs numbers";
 
-  if (display === "KSH") {
-    const formatter = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "KES",
-      maximumFractionDigits: 0
-    });
-
-    return formatter.format(valueKsh).replace("KES", "KSh");
+  if (valueKsh === 0) {
+    return display === "KSH"
+      ? new Intl.NumberFormat("en-US", { style: "currency", currency: "KES", maximumFractionDigits: 2 }).format(0).replace("KES", "KSh")
+      : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(0);
   }
 
-  const rate = normalizeExchangeRate(exchangeRate);
-  if (!isFiniteNumber(rate)) return "Needs Exchange Rate";
-
-  const displayValue = valueKsh / rate;
+  const displayValue = toDisplayValue(valueKsh, display, exchangeRate);
   if (!isFiniteNumber(displayValue)) return "Needs Exchange Rate";
 
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2
+    currency: display === "KSH" ? "KES" : "USD",
+    maximumFractionDigits: display === "KSH" ? 2 : 2
   });
 
-  return formatter.format(displayValue);
+  return formatter.format(displayValue).replace("KES", "KSh");
 }
 
 export function formatRuleCurrency(value: number | null | undefined, currency: CurrencyCode | undefined): string {

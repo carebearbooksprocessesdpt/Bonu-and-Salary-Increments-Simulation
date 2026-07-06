@@ -1,5 +1,4 @@
 import { fromKsh, isFiniteNumber } from "./currency";
-import { DASHBOARD_REFERENCE_EXCHANGE_RATE } from "./dashboard-metrics-adapter";
 import { computeBonusSalarySplitKsh, groupExposureByDepartment } from "./dashboard-groupings";
 import type { CurrencyCode, SelectedIncentiveAssumption, SimulationResults } from "./types";
 
@@ -82,7 +81,7 @@ function buildPlaceholderCharts(): DashboardCharts {
 export function buildDashboardCharts(input: DashboardChartInputs): DashboardCharts {
   if (!input.hasRealData) return buildPlaceholderCharts();
 
-  const exchangeRate = input.exchangeRate ?? DASHBOARD_REFERENCE_EXCHANGE_RATE;
+  const exchangeRate = input.exchangeRate ?? null;
   const { results, currencyDisplay, revenue, totalCosts, salaryPayouts, assumptions } = input;
 
   const toDisplay = (valueKsh: number | null): number => {
