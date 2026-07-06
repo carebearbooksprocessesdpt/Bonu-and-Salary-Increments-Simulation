@@ -19,6 +19,18 @@ function zeroIfMissing(value: number | null | undefined): number {
   return isFiniteNumber(value) ? value : 0;
 }
 
+function normalizePercentage(value: number | null | undefined): number | null {
+  if (!isFiniteNumber(value) || value < 0 || value > 100) return null;
+  return value <= 1 ? value : value / 100;
+}
+
+function getRuleCurrency(rule: IncentiveRule, fallback: CurrencyCode = "KSH"): CurrencyCode {
+  const formulaCurrency = rule.formulaVariables?.currency;
+  if (formulaCurrency === "KSH" || formulaCurrency === "USD") return formulaCurrency;
+  if (rule.currency === "KSH" || rule.currency === "USD") return rule.currency;
+  return fallback;
+}
+
 export function calculateFixedExposure(
   amount: number | null | undefined,
   currency: CurrencyCode | undefined,
@@ -51,14 +63,15 @@ export function calculatePercentageExposure(
   if (!isFiniteNumber(baseAmount)) {
     return { exposureKsh: 0, warning: "Base amount is required for percentage rules." };
   }
-  if (!isFiniteNumber(percentageRate) || percentageRate < 0 || percentageRate > 100) {
+  const normalizedRate = normalizePercentage(percentageRate);
+  if (!isFiniteNumber(normalizedRate)) {
     return { exposureKsh: 0, warning: "Percentage must be between 0 and 100." };
   }
   const baseKsh = toKsh(baseAmount, baseCurrency, exchangeRate);
   if (!isFiniteNumber(baseKsh)) {
     return { exposureKsh: 0, warning: "Needs Exchange Rate" };
   }
-  return { exposureKsh: baseKsh * (percentageRate / 100) * qualifyingCount };
+  return { exposureKsh: baseKsh * normalizedRate * qualifyingCount };
 }
 
 export function calculateMilestoneExposure(
@@ -164,21 +177,25 @@ export function calculateRuleAssumptionExposure(
       input.exchangeRate
     );
   } else if (rule.formulaType === "billing_collection") {
+    const maxPayoutAmount = Number(rule.maxPayoutAmount ?? rule.formulaVariables?.maxPayout);
+    const maxPayoutCurrency = rule.maxPayoutCurrency ?? getRuleCurrency(rule);
+    const maxPayoutKsh = toKsh(maxPayoutAmount, maxPayoutCurrency, input.exchangeRate);
     result = calculateBillingPayout(
       input.collectionPercentage,
       Number(rule.formulaVariables?.collectionFloorPercent),
       Number(rule.formulaVariables?.fullPayoutPercent),
-      Number(rule.formulaVariables?.maxPayout)
+      maxPayoutKsh
     );
   } else if (rule.formulaType === "marketing_view_blocks") {
     const threshold = Number(rule.formulaVariables?.viewThreshold);
     const faceReward = Number(rule.formulaVariables?.facePersonReward);
     const editorReward = Number(rule.formulaVariables?.editorReward);
+    const currency = getRuleCurrency(rule);
     result = calculateMilestoneExposure(
       input.metricValue,
       threshold,
       faceReward + editorReward,
-      "KSH",
+      currency,
       input.qualifyingCount,
       input.exchangeRate
     );
@@ -192,18 +209,20 @@ export function calculateRuleAssumptionExposure(
       cleanNumber(rule.amount) ??
       cleanNumber(Number(rule.formulaVariables?.milestoneIncrementAmount)) ??
       cleanNumber(Number(rule.formulaVariables?.incrementAmount));
+    const currency = getRuleCurrency(rule);
     result = calculateMilestoneExposure(
       input.metricValue,
       threshold,
       amount,
-      rule.currency ?? "KSH",
+      currency,
       input.qualifyingCount,
       input.exchangeRate
     );
   } else if (rule.payoutType === "not-specified") {
     result = { exposureKsh: 0, warning: "Rule counts toward a threshold and has no direct payout configured." };
   } else {
-    result = calculateFixedExposure(rule.amount, rule.currency, input.qualifyingCount, input.exchangeRate);
+    const currency = getRuleCurrency(rule);
+    result = calculateFixedExposure(rule.amount, currency, input.qualifyingCount, input.exchangeRate);
   }
 
   return {
@@ -221,10 +240,11 @@ export function calculateProfitBeforeIncentives(
   directCostsKsh: number | null,
   salaryPayoutsKsh: number | null
 ): number | null {
-  if (!isFiniteNumber(revenueKsh) || !isFiniteNumber(directCostsKsh) || !isFiniteNumber(salaryPayoutsKsh)) {
+  if (!isFiniteNumber(revenueKsh) || !isFiniteNumber(salaryPayoutsKsh)) {
     return null;
   }
-  return revenueKsh - directCostsKsh - salaryPayoutsKsh;
+  const directCosts = isFiniteNumber(directCostsKsh) ? directCostsKsh : 0;
+  return revenueKsh - directCosts - salaryPayoutsKsh;
 }
 
 export function calculateProfitAfterIncentives(
@@ -239,8 +259,9 @@ export function calculateMaximumSafePayout(
   profitBeforeIncentivesKsh: number | null,
   profitToProtectKsh: number | null
 ): number | null {
-  if (!isFiniteNumber(profitBeforeIncentivesKsh) || !isFiniteNumber(profitToProtectKsh)) return null;
-  return profitBeforeIncentivesKsh - profitToProtectKsh;
+  if (!isFiniteNumber(profitBeforeIncentivesKsh)) return null;
+  const profitToProtect = isFiniteNumber(profitToProtectKsh) ? profitToProtectKsh : 0;
+  return profitBeforeIncentivesKsh - profitToProtect;
 }
 
 export function calculateEquilibriumRevenue(
@@ -249,15 +270,12 @@ export function calculateEquilibriumRevenue(
   totalIncentiveExposureKsh: number | null,
   profitToProtectKsh: number | null
 ): number | null {
-  if (
-    !isFiniteNumber(directCostsKsh) ||
-    !isFiniteNumber(salaryPayoutsKsh) ||
-    !isFiniteNumber(totalIncentiveExposureKsh) ||
-    !isFiniteNumber(profitToProtectKsh)
-  ) {
+  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(totalIncentiveExposureKsh)) {
     return null;
   }
-  return directCostsKsh + salaryPayoutsKsh + totalIncentiveExposureKsh + profitToProtectKsh;
+  const directCosts = isFiniteNumber(directCostsKsh) ? directCostsKsh : 0;
+  const profitToProtect = isFiniteNumber(profitToProtectKsh) ? profitToProtectKsh : 0;
+  return directCosts + salaryPayoutsKsh + totalIncentiveExposureKsh + profitToProtect;
 }
 
 export function calculateAdditionalRevenueNeeded(equilibriumRevenueKsh: number | null, revenueKsh: number | null): number | null {
@@ -292,29 +310,30 @@ export function determineFinancialStatus(args: {
   profitToProtectKsh: number | null;
   closeBufferKsh: number;
 }): "Needs Exchange Rate" | "Needs More Numbers" | "Risky" | "Close" | "Safe" {
-  if (args.exchangeRateNeeded) return "Needs Exchange Rate";
   if (args.missingCoreValues) return "Needs More Numbers";
-  if (!isFiniteNumber(args.profitAfterIncentivesKsh) || !isFiniteNumber(args.profitToProtectKsh)) {
+  if (args.exchangeRateNeeded) return "Needs Exchange Rate";
+  if (!isFiniteNumber(args.profitAfterIncentivesKsh)) {
     return "Needs More Numbers";
   }
-  const gap = args.profitAfterIncentivesKsh - args.profitToProtectKsh;
+  const profitToProtect = isFiniteNumber(args.profitToProtectKsh) ? args.profitToProtectKsh : 0;
+  const gap = args.profitAfterIncentivesKsh - profitToProtect;
   if (gap < 0) return "Risky";
   if (gap <= args.closeBufferKsh) return "Close";
   return "Safe";
 }
 
 export function calculateBaseSalaryRatio(salaryPayoutsKsh: number | null, revenueKsh: number | null): number | null {
-  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(revenueKsh) || revenueKsh <= 0) return null;
+  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
   return salaryPayoutsKsh / revenueKsh;
 }
 
 export function calculateBonusRatio(bonusExposureKsh: number, revenueKsh: number | null): number | null {
-  if (!isFiniteNumber(revenueKsh) || revenueKsh <= 0) return null;
+  if (!isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
   return bonusExposureKsh / revenueKsh;
 }
 
 export function calculateSalaryIncrementRatio(salaryIncrementExposureKsh: number, revenueKsh: number | null): number | null {
-  if (!isFiniteNumber(revenueKsh) || revenueKsh <= 0) return null;
+  if (!isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
   return salaryIncrementExposureKsh / revenueKsh;
 }
 
@@ -324,7 +343,7 @@ export function calculateSustainabilityRatio(
   salaryIncrementExposureKsh: number,
   revenueKsh: number | null
 ): number | null {
-  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(revenueKsh) || revenueKsh <= 0) return null;
+  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
   return (salaryPayoutsKsh + bonusExposureKsh + salaryIncrementExposureKsh) / revenueKsh;
 }
 

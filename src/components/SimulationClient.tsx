@@ -410,11 +410,12 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
       inputCurrency,
       exchangeRate
     );
+    const requiredCoreInputsValid = isFiniteNumber(revenueKsh) && isFiniteNumber(salaryPayoutsKsh);
     const exchangeRateNeeded =
       controls.currencyDisplay === "USD" &&
       (!exchangeRate || exchangeRate <= 0) &&
-      [controls.revenue, controls.directCosts, controls.salaryPayouts, controls.profitToProtect].some((value) => value !== "");
-    const missingCoreValues = [revenueKsh, directCostsKsh, salaryPayoutsKsh, profitToProtectKsh].some((value) => value === null);
+      requiredCoreInputsValid;
+    const missingCoreValues = !requiredCoreInputsValid;
 
     return {
       revenueKsh,
