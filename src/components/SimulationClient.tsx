@@ -6,6 +6,7 @@ import { createScenarioSnapshot, scenarioStorageNote } from "@/lib/scenarios";
 import {
   calculateAdditionalRevenueNeeded,
   calculateBaseSalaryRatio,
+  calculateBonusExposure,
   calculateBonusRatio,
   calculateCloseBufferKsh,
   calculateEquilibriumRevenue,
@@ -15,8 +16,10 @@ import {
   calculateProfitBeforeIncentives,
   calculateRevenueSurplus,
   calculateRuleAssumptionExposure,
+  calculateSalaryIncrementExposure,
   calculateSalaryIncrementRatio,
   calculateSustainabilityRatio,
+  calculateTotalCompensationCost,
   calculateTotalIncentiveExposure,
   determineFinancialStatus
 } from "@/lib/simulation-formulas";
@@ -397,12 +400,9 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
     const equilibriumRevenueKsh = calculateEquilibriumRevenue(directCostsKsh, salaryPayoutsKsh, totalIncentiveExposureKsh, profitToProtectKsh);
     const additionalRevenueNeededKsh = calculateAdditionalRevenueNeeded(equilibriumRevenueKsh, revenueKsh);
     const revenueSurplusKsh = calculateRevenueSurplus(revenueKsh, equilibriumRevenueKsh);
-    const bonusExposureKsh = recalculatedAssumptions
-      .filter((assumption) => assumption.ruleSnapshot.incentiveType !== "Salary Increment")
-      .reduce((total, assumption) => total + assumption.estimatedExposureKsh, 0);
-    const salaryIncrementExposureKsh = recalculatedAssumptions
-      .filter((assumption) => assumption.ruleSnapshot.incentiveType === "Salary Increment" || assumption.ruleSnapshot.isPermanentSalaryIncrement)
-      .reduce((total, assumption) => total + assumption.estimatedExposureKsh, 0);
+    const bonusExposureKsh = calculateBonusExposure(recalculatedAssumptions);
+    const salaryIncrementExposureKsh = calculateSalaryIncrementExposure(recalculatedAssumptions);
+    const totalCompensationCostKsh = calculateTotalCompensationCost(salaryPayoutsKsh, bonusExposureKsh, salaryIncrementExposureKsh);
     const closeBufferKsh = calculateCloseBufferKsh(
       controls.closeBuffer,
       controls.closeBufferMode,
@@ -432,6 +432,9 @@ export function SimulationClient({ rules }: { rules: IncentiveRule[] }) {
       baseSalaryRatio: calculateBaseSalaryRatio(salaryPayoutsKsh, revenueKsh),
       bonusRatio: calculateBonusRatio(bonusExposureKsh, revenueKsh),
       salaryIncrementRatio: calculateSalaryIncrementRatio(salaryIncrementExposureKsh, revenueKsh),
+      bonusExposureKsh,
+      salaryIncrementExposureKsh,
+      totalCompensationCostKsh,
       breakEvenDays: null,
       financialStatus: determineFinancialStatus({
         exchangeRateNeeded,

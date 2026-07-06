@@ -231,8 +231,41 @@ export function calculateRuleAssumptionExposure(
   };
 }
 
+export function calculateBonusExposure(assumptions: SelectedIncentiveAssumption[]): number {
+  return assumptions.reduce((total, assumption) => {
+    const isSalaryIncrement =
+      assumption.ruleSnapshot.incentiveType === "Salary Increment" ||
+      assumption.ruleSnapshot.isPermanentSalaryIncrement;
+    return total + (isSalaryIncrement ? 0 : zeroIfMissing(assumption.estimatedExposureKsh));
+  }, 0);
+}
+
+export function calculateSalaryIncrementExposure(assumptions: SelectedIncentiveAssumption[]): number {
+  return assumptions.reduce((total, assumption) => {
+    const isSalaryIncrement =
+      assumption.ruleSnapshot.incentiveType === "Salary Increment" ||
+      assumption.ruleSnapshot.isPermanentSalaryIncrement;
+    return total + (isSalaryIncrement ? zeroIfMissing(assumption.estimatedExposureKsh) : 0);
+  }, 0);
+}
+
 export function calculateTotalIncentiveExposure(assumptions: SelectedIncentiveAssumption[]): number {
-  return assumptions.reduce((total, assumption) => total + zeroIfMissing(assumption.estimatedExposureKsh), 0);
+  return calculateBonusExposure(assumptions) + calculateSalaryIncrementExposure(assumptions);
+}
+
+export function calculateTotalCompensationCost(
+  salaryPayoutsKsh: number | null,
+  bonusExposureKsh: number,
+  salaryIncrementExposureKsh: number
+): number | null {
+  if (!isFiniteNumber(salaryPayoutsKsh)) return null;
+  return salaryPayoutsKsh + bonusExposureKsh + salaryIncrementExposureKsh;
+}
+
+function safeRatio(numerator: number | null | undefined, denominator: number | null | undefined): number {
+  if (!isFiniteNumber(numerator) || !isFiniteNumber(denominator) || denominator <= 0) return 0;
+  const ratio = numerator / denominator;
+  return Number.isFinite(ratio) ? ratio : 0;
 }
 
 export function calculateProfitBeforeIncentives(
@@ -323,18 +356,15 @@ export function determineFinancialStatus(args: {
 }
 
 export function calculateBaseSalaryRatio(salaryPayoutsKsh: number | null, revenueKsh: number | null): number | null {
-  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
-  return salaryPayoutsKsh / revenueKsh;
+  return safeRatio(salaryPayoutsKsh, revenueKsh);
 }
 
 export function calculateBonusRatio(bonusExposureKsh: number, revenueKsh: number | null): number | null {
-  if (!isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
-  return bonusExposureKsh / revenueKsh;
+  return safeRatio(bonusExposureKsh, revenueKsh);
 }
 
 export function calculateSalaryIncrementRatio(salaryIncrementExposureKsh: number, revenueKsh: number | null): number | null {
-  if (!isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
-  return salaryIncrementExposureKsh / revenueKsh;
+  return safeRatio(salaryIncrementExposureKsh, revenueKsh);
 }
 
 export function calculateSustainabilityRatio(
@@ -343,8 +373,8 @@ export function calculateSustainabilityRatio(
   salaryIncrementExposureKsh: number,
   revenueKsh: number | null
 ): number | null {
-  if (!isFiniteNumber(salaryPayoutsKsh) || !isFiniteNumber(revenueKsh) || revenueKsh <= 0) return 0;
-  return (salaryPayoutsKsh + bonusExposureKsh + salaryIncrementExposureKsh) / revenueKsh;
+  if (!isFiniteNumber(salaryPayoutsKsh)) return 0;
+  return safeRatio(salaryPayoutsKsh + bonusExposureKsh + salaryIncrementExposureKsh, revenueKsh);
 }
 
 export function calculateMaximumSafeMonthlyIncrement(

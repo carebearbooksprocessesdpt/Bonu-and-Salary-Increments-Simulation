@@ -214,6 +214,9 @@ export interface SimulationResults {
   baseSalaryRatio: number | null;
   bonusRatio: number | null;
   salaryIncrementRatio: number | null;
+  bonusExposureKsh: number | null;
+  salaryIncrementExposureKsh: number | null;
+  totalCompensationCostKsh: number | null;
   breakEvenDays: number | null;
   financialStatus: "Needs Exchange Rate" | "Needs More Numbers" | "Risky" | "Close" | "Safe";
 }

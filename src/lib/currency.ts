@@ -4,18 +4,25 @@ export function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+export function normalizeExchangeRate(exchangeRate: number | null | undefined): number | null {
+  if (!isFiniteNumber(exchangeRate) || exchangeRate <= 0) return null;
+  return exchangeRate;
+}
+
 export function toKsh(value: number, currency: CurrencyCode, exchangeRate?: number | null): number | null {
   if (!isFiniteNumber(value)) return null;
   if (currency === "KSH") return value;
-  if (!isFiniteNumber(exchangeRate) || exchangeRate <= 0) return null;
-  return value * exchangeRate;
+  const rate = normalizeExchangeRate(exchangeRate);
+  if (!isFiniteNumber(rate)) return null;
+  return value * rate;
 }
 
 export function fromKsh(valueKsh: number, currency: CurrencyDisplay, exchangeRate?: number | null): number | null {
   if (!isFiniteNumber(valueKsh)) return null;
   if (currency === "KSH") return valueKsh;
-  if (!isFiniteNumber(exchangeRate) || exchangeRate <= 0) return null;
-  return valueKsh / exchangeRate;
+  const rate = normalizeExchangeRate(exchangeRate);
+  if (!isFiniteNumber(rate)) return null;
+  return valueKsh / rate;
 }
 
 export function formatCurrency(
