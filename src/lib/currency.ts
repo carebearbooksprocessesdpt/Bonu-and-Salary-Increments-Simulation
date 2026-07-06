@@ -32,18 +32,29 @@ export function formatCurrency(
 ): string {
   if (!isFiniteNumber(valueKsh)) return "Needs numbers";
 
-  const displayValue = display === "KSH" ? valueKsh : fromKsh(valueKsh, "USD", exchangeRate);
-  if (!isFiniteNumber(displayValue)) return "Needs rate";
+  if (display === "KSH") {
+    const formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "KES",
+      maximumFractionDigits: 0
+    });
+
+    return formatter.format(valueKsh).replace("KES", "KSh");
+  }
+
+  const rate = normalizeExchangeRate(exchangeRate);
+  if (!isFiniteNumber(rate)) return "Needs Exchange Rate";
+
+  const displayValue = valueKsh / rate;
+  if (!isFiniteNumber(displayValue)) return "Needs Exchange Rate";
 
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: display === "KSH" ? "KES" : "USD",
-    maximumFractionDigits: display === "KSH" ? 0 : 2
+    currency: "USD",
+    maximumFractionDigits: 2
   });
 
-  return display === "KSH"
-    ? formatter.format(displayValue).replace("KES", "KSh")
-    : formatter.format(displayValue);
+  return formatter.format(displayValue);
 }
 
 export function formatRuleCurrency(value: number | null | undefined, currency: CurrencyCode | undefined): string {

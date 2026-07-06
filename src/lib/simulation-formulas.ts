@@ -330,7 +330,7 @@ export function calculateCloseBufferKsh(
 ): number {
   if (!isFiniteNumber(closeBuffer)) return 0;
   if (closeBufferMode === "amount") {
-    return toKsh(closeBuffer, inputCurrency, exchangeRate) ?? 0;
+    return Math.max(0, closeBuffer);
   }
   if (!isFiniteNumber(profitToProtectKsh)) return 0;
   return closeBuffer > 1 ? profitToProtectKsh * (closeBuffer / 100) : profitToProtectKsh * closeBuffer;

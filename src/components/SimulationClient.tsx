@@ -1357,7 +1357,7 @@ export function SimulationClient({
   const [currencyMessage, setCurrencyMessage] = useState("Exchange rate can be edited manually.");
 
   const exchangeRate = numericValue(controls.exchangeRate);
-  const inputCurrency: CurrencyCode = controls.currencyDisplay === "USD" ? "USD" : "KSH";
+  const inputCurrency: CurrencyCode = "KSH";
 
   const recalculatedAssumptions = useMemo(
     () =>
@@ -1381,10 +1381,10 @@ export function SimulationClient({
   }, [recalculatedAssumptions, onAssumptionsChange]);
 
   const results = useMemo<SimulationResults>(() => {
-    const revenueKsh = controls.revenue === "" ? null : toKsh(controls.revenue, inputCurrency, exchangeRate);
-    const directCostsKsh = controls.directCosts === "" ? null : toKsh(controls.directCosts, inputCurrency, exchangeRate);
-    const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : toKsh(controls.salaryPayouts, inputCurrency, exchangeRate);
-    const profitToProtectKsh = controls.profitToProtect === "" ? null : toKsh(controls.profitToProtect, inputCurrency, exchangeRate);
+    const revenueKsh = controls.revenue === "" ? null : numericValue(controls.revenue);
+    const directCostsKsh = controls.directCosts === "" ? null : numericValue(controls.directCosts);
+    const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : numericValue(controls.salaryPayouts);
+    const profitToProtectKsh = controls.profitToProtect === "" ? null : numericValue(controls.profitToProtect);
     const totalIncentiveExposureKsh = calculateTotalIncentiveExposure(recalculatedAssumptions);
     const profitBeforeIncentivesKsh = calculateProfitBeforeIncentives(revenueKsh, directCostsKsh, salaryPayoutsKsh);
     const profitAfterIncentivesKsh = calculateProfitAfterIncentives(profitBeforeIncentivesKsh, totalIncentiveExposureKsh);
@@ -1505,15 +1505,15 @@ export function SimulationClient({
   const displayMoneyZero = (value: number | null) => {
     if (!isFiniteNumber(value) || value === 0) return zeroMoney;
     const formatted = displayMoney(value);
-    return formatted === "Needs rate" ? "Awaiting rate" : formatted;
+    return formatted === "Needs Exchange Rate" || formatted === "Needs numbers" ? "Needs Exchange Rate" : formatted;
   };
   const displayMoneyDash = (value: number | null) => {
     if (!isFiniteNumber(value)) return "—";
     const formatted = displayMoney(value);
-    return formatted === "Needs rate" ? "—" : formatted;
+    return formatted === "Needs Exchange Rate" || formatted === "Needs numbers" ? "—" : formatted;
   };
-  const directCostsKsh = controls.directCosts === "" ? null : toKsh(controls.directCosts, inputCurrency, exchangeRate);
-  const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : toKsh(controls.salaryPayouts, inputCurrency, exchangeRate);
+  const directCostsKsh = controls.directCosts === "" ? null : numericValue(controls.directCosts);
+  const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : numericValue(controls.salaryPayouts);
   const statusTone = results.financialStatus === "Risky" ? "risk" : results.financialStatus === "Safe" ? "safe" : results.financialStatus === "Close" ? "close" : undefined;
 
   const qualifyingEmployeesSection = (
