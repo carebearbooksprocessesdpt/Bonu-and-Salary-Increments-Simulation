@@ -1,77 +1,68 @@
 import Link from "next/link";
-import { getActiveRules, getRuleCountByDepartment, incentiveRules } from "@/lib/incentive-rules";
+import { DashboardSimulationSection } from "@/components/DashboardSimulationSection";
 
-export default function DashboardPage() {
-  const activeRules = getActiveRules();
-  const departmentCounts = getRuleCountByDepartment();
-  const salaryRules = activeRules.filter((rule) => rule.incentiveType === "Salary Increment").length;
-  const formulaRules = activeRules.filter((rule) => rule.incentiveType === "Formula").length;
+function Icon({ name, className = "h-4 w-4" }: { name: string; className?: string }) {
+  const common = {
+    className,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2.25,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true
+  };
+
+  if (name === "refresh") {
+    return (
+      <svg {...common}>
+        <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+        <path d="M21 3v6h-6" />
+      </svg>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <section className="panel p-5 lg:p-6">
-        <div className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+    <svg {...common}>
+      <path d="M19 21 12 17 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z" />
+    </svg>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <div className="min-h-screen">
+      <header className="border-b border-line bg-white px-5 py-5 lg:px-8">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-teal">Prompt 1 Foundation</p>
-            <h2 className="mt-2 text-3xl font-black leading-tight text-ink">
-              Standalone incentive planning model for CareBearBooks.
-            </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
-              This foundation keeps Set Incentives as the rule source, prepares simulation math in KSh, and creates
-              the pages needed for the next prompts to connect advanced projections, charts, and scenario persistence.
+            <div className="mb-1 flex items-center gap-2">
+              <span className="rounded bg-accent/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent">Simulation Tool</span>
+              <span className="text-xs font-normal text-slate-500">v2.4 Active</span>
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">CareBearBooks Bonus and Salary Increments Simulation</h2>
+            <p className="mt-0.5 text-xs font-normal text-slate-500">
+              Estimate incentive exposure, protected profit, safe payout capacity, and revenue gaps.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 lg:justify-end">
-            <Link href="/set-incentives" className="btn btn-primary">
-              Set Incentives
-            </Link>
-            <Link href="/incentive-simulation" className="btn btn-secondary">
-              Incentive Simulation
-            </Link>
-          </div>
-        </div>
-      </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="result-card">
-          <span className="text-sm font-bold text-slate-600">Seeded Rules</span>
-          <strong>{incentiveRules.length}</strong>
+          <div className="flex shrink-0 items-center gap-3">
+            {/* TODO: Connect to shared simulator reset action when dashboard scenario state is lifted out of the simulator page. */}
+            <Link href="/incentive-simulation" className="flex items-center gap-2 rounded-lg border border-line bg-white px-4 py-2 text-xs font-medium text-ink transition-all hover:bg-sage-soft">
+              <Icon name="refresh" />
+              Reset Simulation
+            </Link>
+            {/* TODO: Connect to shared scenario save action when scenario persistence is available at dashboard scope. */}
+            <Link href="/incentive-simulation" className="flex items-center gap-2 rounded-lg bg-[#064e4a] px-4 py-2 text-xs font-medium text-white shadow-sm transition-all hover:bg-[#021f1e]">
+              <Icon name="bookmark" />
+              Save Scenario
+            </Link>
+          </div>
         </div>
-        <div className="result-card">
-          <span className="text-sm font-bold text-slate-600">Active Rules</span>
-          <strong>{activeRules.length}</strong>
-        </div>
-        <div className="result-card">
-          <span className="text-sm font-bold text-slate-600">Salary Increment Rules</span>
-          <strong>{salaryRules}</strong>
-        </div>
-        <div className="result-card">
-          <span className="text-sm font-bold text-slate-600">Formula Rules</span>
-          <strong>{formulaRules}</strong>
-        </div>
-      </section>
+      </header>
 
-      <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="compact-panel p-5">
-          <h3 className="text-lg font-black text-ink">Model Direction</h3>
-          <div className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
-            <p>Calculations are prepared to answer affordability, protected profit, exposure, and revenue gap questions.</p>
-            <p>Currency conversion is isolated behind a server route and manual exchange rate fallback.</p>
-            <p>Scenario saving uses a server-compatible abstraction so it can later move to a database.</p>
-          </div>
-        </div>
-        <div className="compact-panel p-5">
-          <h3 className="text-lg font-black text-ink">Rules By Department</h3>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {Object.entries(departmentCounts).map(([department, count]) => (
-              <div key={department} className="flex items-center justify-between rounded-xl border border-line bg-sage-soft px-3 py-2">
-                <span className="text-sm font-bold text-slate-700">{department}</span>
-                <span className="badge">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="p-5 lg:p-8">
+        <DashboardSimulationSection />
+      </div>
     </div>
   );
 }

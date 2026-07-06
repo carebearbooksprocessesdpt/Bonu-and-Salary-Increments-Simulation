@@ -45,7 +45,7 @@ const fallbackCategories: RuleCategory[] = [
 type DrawerMode = "add" | "view" | "edit";
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="text-xs font-black uppercase tracking-[0.12em] text-slate-600">{children}</label>;
+  return <label className="text-xs font-normal uppercase tracking-[0.12em] text-slate-600">{children}</label>;
 }
 
 function TextInput({
@@ -106,7 +106,7 @@ function CheckboxField({
   disabled?: boolean;
 }) {
   return (
-    <label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-bold text-slate-700">
+    <label className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-normal text-slate-700">
       <input
         type="checkbox"
         checked={checked}
@@ -165,10 +165,10 @@ function RuleDrawer({
         <div className="sticky top-0 z-10 border-b border-line bg-white px-5 py-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-teal">
+              <p className="text-xs font-normal uppercase tracking-[0.14em] text-teal">
                 {mode === "add" ? "Add Incentive Rule" : mode === "edit" ? "Edit Incentive Rule" : "View Incentive Rule"}
               </p>
-              <h2 className="mt-1 text-2xl font-black text-ink">{draft.ruleName || "Incentive Rule"}</h2>
+              <h2 className="mt-1 text-2xl font-semibold text-ink">{draft.ruleName || "Incentive Rule"}</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               {!readOnly && (
@@ -191,7 +191,7 @@ function RuleDrawer({
           )}
 
           <section className="compact-panel p-4">
-            <h3 className="text-base font-black text-ink">Basic Details</h3>
+            <h3 className="text-base font-semibold text-ink">Basic Details</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <TextInput label="Rule Name" value={draft.ruleName} onChange={(value) => update("ruleName", value)} readOnly={readOnly} />
               <SelectInput
@@ -242,7 +242,7 @@ function RuleDrawer({
           </section>
 
           <section className="compact-panel p-4">
-            <h3 className="text-base font-black text-ink">Trigger Conditions</h3>
+            <h3 className="text-base font-semibold text-ink">Trigger Conditions</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <TextInput
                 label="Trigger"
@@ -272,7 +272,7 @@ function RuleDrawer({
           </section>
 
           <section className="compact-panel p-4">
-            <h3 className="text-base font-black text-ink">Payout / Formula</h3>
+            <h3 className="text-base font-semibold text-ink">Payout / Formula</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <SelectInput
                 label="Payout Type"
@@ -337,12 +337,12 @@ function RuleDrawer({
                 }}
                 readOnly={readOnly}
               />
-              {formulaError && <p className="text-sm font-bold text-red-700">{formulaError}</p>}
+              {formulaError && <p className="text-sm font-medium text-red-700">{formulaError}</p>}
             </div>
           </section>
 
           <section className="compact-panel p-4">
-            <h3 className="text-base font-black text-ink">Eligibility / Requirements</h3>
+            <h3 className="text-base font-semibold text-ink">Eligibility / Requirements</h3>
             <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
               <CheckboxField label="Requires Approval" checked={Boolean(draft.requiresApproval)} onChange={(value) => update("requiresApproval", value)} disabled={readOnly} />
               <CheckboxField label="Requires Evidence" checked={Boolean(draft.requiresEvidence)} onChange={(value) => update("requiresEvidence", value)} disabled={readOnly} />
@@ -357,7 +357,7 @@ function RuleDrawer({
 
           <section className="grid gap-4 lg:grid-cols-2">
             <div className="compact-panel p-4">
-              <h3 className="text-base font-black text-ink">Advanced</h3>
+              <h3 className="text-base font-semibold text-ink">Advanced</h3>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <TextInput label="Platform" value={draft.platform ?? ""} onChange={(value) => update("platform", value)} readOnly={readOnly} />
                 <TextInput label="Service Type" value={draft.serviceType ?? ""} onChange={(value) => update("serviceType", value)} readOnly={readOnly} />
@@ -366,16 +366,16 @@ function RuleDrawer({
               </div>
             </div>
             <div className="compact-panel p-4">
-              <h3 className="text-base font-black text-ink">Preview</h3>
-              <p className="mt-3 rounded-xl border border-line bg-sage-soft p-3 text-sm font-semibold leading-6 text-slate-700">
+              <h3 className="text-base font-semibold text-ink">Preview</h3>
+              <p className="mt-3 rounded-xl border border-line bg-sage-soft p-3 text-sm font-normal leading-6 text-slate-700">
                 {createRulePreview(draft)}
               </p>
               <div className="mt-3 space-y-1">
                 {validation.errors.map((error) => (
-                  <p className="text-sm font-bold text-red-700" key={error}>{error}</p>
+                  <p className="text-sm font-medium text-red-700" key={error}>{error}</p>
                 ))}
                 {validation.warnings.map((warning) => (
-                  <p className="text-sm font-bold text-amber-700" key={warning}>{warning}</p>
+                  <p className="text-sm font-medium text-amber-700" key={warning}>{warning}</p>
                 ))}
               </div>
             </div>
@@ -455,8 +455,8 @@ export function SetIncentivesClient({ initialRules }: { initialRules: IncentiveR
       <section className="panel p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-teal">Rule Engine Foundation</p>
-            <h2 className="mt-1 text-3xl font-black text-ink">Set Incentives</h2>
+            <p className="text-sm font-normal uppercase tracking-[0.14em] text-teal">Rule Engine Foundation</p>
+            <h2 className="mt-1 text-3xl font-semibold text-ink">Set Incentives</h2>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-700">
               Create and manage incentive rules, thresholds, payout amounts, salary increments, and automatic trigger
               conditions.
@@ -500,12 +500,12 @@ export function SetIncentivesClient({ initialRules }: { initialRules: IncentiveR
               {filteredRules.map((rule) => (
                 <tr key={rule.id}>
                   <td>
-                    <div className="font-black text-ink">{rule.ruleName}</div>
-                    <div className="mt-1 text-xs font-semibold text-slate-500">{rule.ruleKey}</div>
+                    <div className="font-medium text-ink">{rule.ruleName}</div>
+                    <div className="mt-1 text-xs font-normal text-slate-500">{rule.ruleKey}</div>
                   </td>
                   <td><span className="badge">{rule.department}</span></td>
                   <td>{summarizeTrigger(rule)}</td>
-                  <td><strong className="text-dark-teal">{summarizePayout(rule)}</strong></td>
+                  <td><span className="font-medium text-dark-teal">{summarizePayout(rule)}</span></td>
                   <td>{rule.payoutFrequency || rule.triggerFrequency || "Configured by rule"}</td>
                   <td>
                     <span className={rule.status === "Active" ? "badge" : "badge bg-white text-slate-600"}>{rule.status}</span>
@@ -528,7 +528,7 @@ export function SetIncentivesClient({ initialRules }: { initialRules: IncentiveR
           </table>
         </div>
         {filteredRules.length === 0 && (
-          <div className="p-6 text-center text-sm font-bold text-slate-600">No incentive rules match the current filters.</div>
+          <div className="p-6 text-center text-sm font-normal text-slate-600">No incentive rules match the current filters.</div>
         )}
       </section>
 
