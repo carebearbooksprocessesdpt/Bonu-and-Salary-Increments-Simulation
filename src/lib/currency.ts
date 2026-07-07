@@ -4,18 +4,31 @@ export function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+export function normalizeExchangeRate(exchangeRate: number | null | undefined): number | null {
+  if (!isFiniteNumber(exchangeRate) || exchangeRate <= 0) return null;
+  return exchangeRate;
+}
+
 export function toKsh(value: number, currency: CurrencyCode, exchangeRate?: number | null): number | null {
   if (!isFiniteNumber(value)) return null;
   if (currency === "KSH") return value;
-  if (!isFiniteNumber(exchangeRate) || exchangeRate <= 0) return null;
-  return value * exchangeRate;
+  const rate = normalizeExchangeRate(exchangeRate);
+  if (!isFiniteNumber(rate)) return null;
+  return value * rate;
 }
 
 export function fromKsh(valueKsh: number, currency: CurrencyDisplay, exchangeRate?: number | null): number | null {
   if (!isFiniteNumber(valueKsh)) return null;
   if (currency === "KSH") return valueKsh;
-  if (!isFiniteNumber(exchangeRate) || exchangeRate <= 0) return null;
-  return valueKsh / exchangeRate;
+  const rate = normalizeExchangeRate(exchangeRate);
+  if (!isFiniteNumber(rate)) return null;
+  return valueKsh / rate;
+}
+
+export function toDisplayValue(valueKsh: number | null | undefined, display: CurrencyDisplay = "KSH", exchangeRate?: number | null): number | null {
+  if (!isFiniteNumber(valueKsh)) return null;
+  if (display === "KSH") return valueKsh;
+  return fromKsh(valueKsh, "USD", exchangeRate);
 }
 
 export function formatCurrency(
@@ -25,18 +38,22 @@ export function formatCurrency(
 ): string {
   if (!isFiniteNumber(valueKsh)) return "Needs numbers";
 
-  const displayValue = display === "KSH" ? valueKsh : fromKsh(valueKsh, "USD", exchangeRate);
-  if (!isFiniteNumber(displayValue)) return "Needs rate";
+  if (valueKsh === 0) {
+    return display === "KSH"
+      ? new Intl.NumberFormat("en-US", { style: "currency", currency: "KES", maximumFractionDigits: 2 }).format(0).replace("KES", "KSh")
+      : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(0);
+  }
+
+  const displayValue = toDisplayValue(valueKsh, display, exchangeRate);
+  if (!isFiniteNumber(displayValue)) return "Needs Exchange Rate";
 
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: display === "KSH" ? "KES" : "USD",
-    maximumFractionDigits: display === "KSH" ? 0 : 2
+    maximumFractionDigits: display === "KSH" ? 2 : 2
   });
 
-  return display === "KSH"
-    ? formatter.format(displayValue).replace("KES", "KSh")
-    : formatter.format(displayValue);
+  return formatter.format(displayValue).replace("KES", "KSh");
 }
 
 export function formatRuleCurrency(value: number | null | undefined, currency: CurrencyCode | undefined): string {

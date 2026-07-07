@@ -6,6 +6,7 @@ import { createScenarioSnapshot, scenarioStorageNote } from "@/lib/scenarios";
 import {
   calculateAdditionalRevenueNeeded,
   calculateBaseSalaryRatio,
+  calculateBonusExposure,
   calculateBonusRatio,
   calculateCloseBufferKsh,
   calculateEquilibriumRevenue,
@@ -15,8 +16,10 @@ import {
   calculateProfitBeforeIncentives,
   calculateRevenueSurplus,
   calculateRuleAssumptionExposure,
+  calculateSalaryIncrementExposure,
   calculateSalaryIncrementRatio,
   calculateSustainabilityRatio,
+  calculateTotalCompensationCost,
   calculateTotalIncentiveExposure,
   determineFinancialStatus
 } from "@/lib/simulation-formulas";
@@ -1354,7 +1357,7 @@ export function SimulationClient({
   const [currencyMessage, setCurrencyMessage] = useState("Exchange rate can be edited manually.");
 
   const exchangeRate = numericValue(controls.exchangeRate);
-  const inputCurrency: CurrencyCode = controls.currencyDisplay === "USD" ? "USD" : "KSH";
+  const inputCurrency: CurrencyCode = "KSH";
 
   const recalculatedAssumptions = useMemo(
     () =>
@@ -1378,10 +1381,10 @@ export function SimulationClient({
   }, [recalculatedAssumptions, onAssumptionsChange]);
 
   const results = useMemo<SimulationResults>(() => {
-    const revenueKsh = controls.revenue === "" ? null : toKsh(controls.revenue, inputCurrency, exchangeRate);
-    const directCostsKsh = controls.directCosts === "" ? null : toKsh(controls.directCosts, inputCurrency, exchangeRate);
-    const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : toKsh(controls.salaryPayouts, inputCurrency, exchangeRate);
-    const profitToProtectKsh = controls.profitToProtect === "" ? null : toKsh(controls.profitToProtect, inputCurrency, exchangeRate);
+    const revenueKsh = controls.revenue === "" ? null : numericValue(controls.revenue);
+    const directCostsKsh = controls.directCosts === "" ? null : numericValue(controls.directCosts);
+    const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : numericValue(controls.salaryPayouts);
+    const profitToProtectKsh = controls.profitToProtect === "" ? null : numericValue(controls.profitToProtect);
     const totalIncentiveExposureKsh = calculateTotalIncentiveExposure(recalculatedAssumptions);
     const profitBeforeIncentivesKsh = calculateProfitBeforeIncentives(revenueKsh, directCostsKsh, salaryPayoutsKsh);
     const profitAfterIncentivesKsh = calculateProfitAfterIncentives(profitBeforeIncentivesKsh, totalIncentiveExposureKsh);
@@ -1389,12 +1392,9 @@ export function SimulationClient({
     const equilibriumRevenueKsh = calculateEquilibriumRevenue(directCostsKsh, salaryPayoutsKsh, totalIncentiveExposureKsh, profitToProtectKsh);
     const additionalRevenueNeededKsh = calculateAdditionalRevenueNeeded(equilibriumRevenueKsh, revenueKsh);
     const revenueSurplusKsh = calculateRevenueSurplus(revenueKsh, equilibriumRevenueKsh);
-    const bonusExposureKsh = recalculatedAssumptions
-      .filter((assumption) => assumption.ruleSnapshot.incentiveType !== "Salary Increment")
-      .reduce((total, assumption) => total + assumption.estimatedExposureKsh, 0);
-    const salaryIncrementExposureKsh = recalculatedAssumptions
-      .filter((assumption) => assumption.ruleSnapshot.incentiveType === "Salary Increment" || assumption.ruleSnapshot.isPermanentSalaryIncrement)
-      .reduce((total, assumption) => total + assumption.estimatedExposureKsh, 0);
+    const bonusExposureKsh = calculateBonusExposure(recalculatedAssumptions);
+    const salaryIncrementExposureKsh = calculateSalaryIncrementExposure(recalculatedAssumptions);
+    const totalCompensationCostKsh = calculateTotalCompensationCost(salaryPayoutsKsh, bonusExposureKsh, salaryIncrementExposureKsh);
     const closeBufferKsh = calculateCloseBufferKsh(
       controls.closeBuffer,
       controls.closeBufferMode,
@@ -1402,11 +1402,12 @@ export function SimulationClient({
       inputCurrency,
       exchangeRate
     );
+    const requiredCoreInputsValid = isFiniteNumber(revenueKsh) && isFiniteNumber(salaryPayoutsKsh);
     const exchangeRateNeeded =
       controls.currencyDisplay === "USD" &&
       (!exchangeRate || exchangeRate <= 0) &&
-      [controls.revenue, controls.directCosts, controls.salaryPayouts, controls.profitToProtect].some((value) => value !== "");
-    const missingCoreValues = [revenueKsh, directCostsKsh, salaryPayoutsKsh, profitToProtectKsh].some((value) => value === null);
+      requiredCoreInputsValid;
+    const missingCoreValues = !requiredCoreInputsValid;
 
     return {
       revenueKsh,
@@ -1423,6 +1424,9 @@ export function SimulationClient({
       baseSalaryRatio: calculateBaseSalaryRatio(salaryPayoutsKsh, revenueKsh),
       bonusRatio: calculateBonusRatio(bonusExposureKsh, revenueKsh),
       salaryIncrementRatio: calculateSalaryIncrementRatio(salaryIncrementExposureKsh, revenueKsh),
+      bonusExposureKsh,
+      salaryIncrementExposureKsh,
+      totalCompensationCostKsh,
       breakEvenDays: null,
       financialStatus: determineFinancialStatus({
         exchangeRateNeeded,
@@ -1501,15 +1505,15 @@ export function SimulationClient({
   const displayMoneyZero = (value: number | null) => {
     if (!isFiniteNumber(value) || value === 0) return zeroMoney;
     const formatted = displayMoney(value);
-    return formatted === "Needs rate" ? "Awaiting rate" : formatted;
+    return formatted === "Needs Exchange Rate" || formatted === "Needs numbers" ? "Needs Exchange Rate" : formatted;
   };
   const displayMoneyDash = (value: number | null) => {
     if (!isFiniteNumber(value)) return "—";
     const formatted = displayMoney(value);
-    return formatted === "Needs rate" ? "—" : formatted;
+    return formatted === "Needs Exchange Rate" || formatted === "Needs numbers" ? "—" : formatted;
   };
-  const directCostsKsh = controls.directCosts === "" ? null : toKsh(controls.directCosts, inputCurrency, exchangeRate);
-  const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : toKsh(controls.salaryPayouts, inputCurrency, exchangeRate);
+  const directCostsKsh = controls.directCosts === "" ? null : numericValue(controls.directCosts);
+  const salaryPayoutsKsh = controls.salaryPayouts === "" ? null : numericValue(controls.salaryPayouts);
   const statusTone = results.financialStatus === "Risky" ? "risk" : results.financialStatus === "Safe" ? "safe" : results.financialStatus === "Close" ? "close" : undefined;
 
   const qualifyingEmployeesSection = (
